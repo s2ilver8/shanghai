@@ -110,6 +110,11 @@
       border-color: var(--ink);
     }
 
+    .tab.manage {
+      color: var(--sub);
+      border-style: dashed;
+    }
+
     .tab.result {
       border-color: var(--accent);
       color: var(--accent);
@@ -172,11 +177,19 @@
       font-size: 40px;
     }
 
+    .thumb .cats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-end;
+      max-width: 70%;
+    }
+
     .thumb .cat {
       font-size: 12px;
       font-weight: 600;
-      color: rgba(0, 0, 0, .55);
-      background: rgba(255, 255, 255, .6);
+      color: rgba(0, 0, 0, .6);
+      background: rgba(255, 255, 255, .75);
       padding: 4px 9px;
       border-radius: 999px;
     }
@@ -439,6 +452,120 @@
       background: #2bb673;
     }
 
+    .live.err {
+      background: var(--must);
+    }
+
+    .live.loading {
+      width: 10px;
+      height: 10px;
+      background: none;
+      border: 2px solid #d9d3cb;
+      border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* 로딩 스켈레톤 */
+    .loading-msg {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--sub);
+      margin-bottom: 12px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #d9d3cb;
+      border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+      flex: none;
+    }
+
+    .sk {
+      background: linear-gradient(90deg, #ece7e0 25%, #f5f1ec 50%, #ece7e0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      from {
+        background-position: 200% 0;
+      }
+
+      to {
+        background-position: -200% 0;
+      }
+    }
+
+    .sk-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .sk-card .sk-thumb {
+      height: 84px;
+      border-radius: 0;
+    }
+
+    .sk-card .sk-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* 연결 실패 화면 */
+    .errbox {
+      background: var(--card);
+      border: 1px solid #f3c2cf;
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .errbox h2 {
+      font-size: 17px;
+      margin: 0 0 6px;
+      color: #8a1230;
+    }
+
+    .errbox p {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: var(--sub);
+    }
+
+    .errbox ol {
+      margin: 0 0 16px;
+      padding-left: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .errbox li {
+      margin-bottom: 8px;
+    }
+
+    .errbox code {
+      background: #f4f0ea;
+      padding: 1px 5px;
+      border-radius: 5px;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
     /* 후보 추가 */
     .fab {
       position: fixed;
@@ -550,6 +677,66 @@
       opacity: .5;
     }
 
+    .btn.small {
+      width: auto;
+      padding: 10px 14px;
+      flex: none;
+    }
+
+    /* 카테고리 선택 (폼) */
+    .cat-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .fcat {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--ink);
+    }
+
+    .fcat.on {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    .fcat.on::before {
+      content: "✓ ";
+    }
+
+    .cat-new {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .cat-new input {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 15px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .filter-note {
+      font-size: 12px;
+      color: var(--sub);
+      margin: -4px 0 10px;
+    }
+
+    .filter-note button {
+      margin-left: 4px;
+    }
+
     /* 사진 */
     .thumb.has-photo {
       height: 170px;
@@ -631,7 +818,7 @@
 
   <header>
     <div class="top">
-      <h1>🇨🇳 상하이 어디 갈까?<small id="status"><span class="live" id="liveDot"></span><span id="statusText">연결
+      <h1>🇨🇳 상하이 어디 갈까?<small id="status"><span class="live loading" id="liveDot"></span><span id="statusText">연결
             중…</span></small></h1>
       <button class="me-chip" id="meChip">나: <b id="meName">-</b> ⇄</button>
     </div>
@@ -654,9 +841,13 @@
     <form class="modal form" id="addForm" autocomplete="off">
       <h3 id="formTitle">새 후보 추가 ✍️</h3>
       <p id="formDesc">추가한 후보는 두 사람 모두에게 보여요.</p>
-      <label class="field">카테고리
-        <select name="cat" id="addCat"></select>
-      </label>
+      <div class="field">카테고리 <span class="opt">(1개 이상 · 여러 개 고를 수 있어요)</span>
+        <div class="cat-picker" id="catPicker"></div>
+        <div class="cat-new">
+          <input id="catNewInput" maxlength="20" placeholder="새 카테고리 직접 입력 (예: 야시장)" />
+          <button type="button" class="btn ghost small" id="catNewAdd">추가</button>
+        </div>
+      </div>
       <label class="field">이름
         <input name="name" required maxlength="40" placeholder="예: 쟈쟈탕바오" />
       </label>
@@ -694,6 +885,19 @@
     </form>
   </div>
 
+  <div class="modal-bg" id="catModal">
+    <div class="modal form">
+      <h3>카테고리 관리 🗂</h3>
+      <p>카테고리를 지워도 후보는 지워지지 않아요. 그 카테고리만 후보에서 빠져요.</p>
+      <div class="cat-new" style="margin:0 0 12px">
+        <input id="catMgrInput" maxlength="20" placeholder="새 카테고리 이름" />
+        <button type="button" class="btn small" id="catMgrAdd">추가</button>
+      </div>
+      <div class="rows" id="catMgrList"></div>
+      <button type="button" class="btn ghost" id="catMgrClose" style="margin-top:12px">닫기</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -702,7 +906,7 @@
      *    (값을 비워 두면 '로컬 모드'로 동작해요 — 이 기기에만 저장)
      * ========================================================= */
     const CONFIG = {
-      SUPABASE_URL: "https://mnxupkymxhubfahiditk.supabase.co",          // 예: https://abcdxyz.supabase.co
+      SUPABASE_URL: "https://mnxupkymxhubfahiditk.supabase.co",
       SUPABASE_KEY: "sb_publishable_RWgM9cUhuWATL2corxgsEw_KRthhlq5",     // anon public 키 또는 Publishable 키
       PEOPLE: ["승은", "연경"],                       // 두 사람 이름 (예: ["지민", "수아"])
     };
@@ -713,13 +917,10 @@
      *    아래 SEED_PLACES는 로컬 모드의 초기값이고,
      *    Supabase에는 supabase-setup.sql이 같은 내용을 넣어 줘요.
      * ========================================================= */
-    const CATEGORIES = [
-      {id: "sight", label: "🏛 명소", color: "#ffe3d6", e: "📍"},
-      {id: "night", label: "🌃 야경", color: "#dcdcff", e: "✨"},
-      {id: "food", label: "🥟 먹거리", color: "#fff0c2", e: "🍜"},
-      {id: "shop", label: "☕ 카페·쇼핑", color: "#dff3e4", e: "🛍"},
-      {id: "trip", label: "🚄 근교·테마", color: "#d8eefc", e: "🚄"},
-    ];
+    // 처음 넣어 둘 기본 카테고리 (화면에서 추가·삭제할 수 있어요)
+    const SEED_CATEGORIES = ["명소", "야경", "먹거리", "카페·쇼핑", "근교·테마"];
+    // 예전 버전의 카테고리 코드 → 이름 (기존 데이터 호환용)
+    const LEGACY_CAT = {sight: "명소", night: "야경", food: "먹거리", shop: "카페·쇼핑", trip: "근교·테마"};
 
     const SEED_PLACES = [
       // 명소
@@ -771,7 +972,14 @@
       {v: "pass", label: "🙅 패스", short: "🙅 패스"},
     ];
     const CHOICE_MAP = Object.fromEntries(CHOICES.map(c => [c.v, c]));
-    const CAT_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+    const UNCATEGORIZED = "미분류";
+    const PALETTE = ["#ffe3d6", "#dcdcff", "#fff0c2", "#dff3e4", "#d8eefc", "#f8dcec", "#e8e2ff", "#ffe6c7", "#d6f1ee", "#ebe8dc"];
+    function catColor(name) {
+      let h = 0;
+      for (const ch of name || "") h = (h * 31 + ch.codePointAt(0)) >>> 0;
+      return PALETTE[h % PALETTE.length];
+    }
+    function normCat(s) {return (s || "").toString().trim().replace(/\s+/g, " ").slice(0, 20);}
 
     const isLocal = !CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes("YOUR_") ||
       !CONFIG.SUPABASE_KEY || CONFIG.SUPABASE_KEY.includes("YOUR_");
@@ -779,6 +987,27 @@
     const LS_LOCAL = "sh-picks-local";
     const LS_LOCAL_PLACES = "sh-picks-local-places";
     const LS_LOCAL_PHOTOS = "sh-picks-local-photos";
+    const LS_LOCAL_CATS = "sh-picks-local-cats";
+
+    // 카테고리 목록 [{ name, created_at }]
+    let categoryRows = [];
+    function seedCategoryRows() {
+      return SEED_CATEGORIES.map((name, i) => ({name, created_at: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString()}));
+    }
+    function placeCats(r) {
+      if (Array.isArray(r.categories) && r.categories.length) return r.categories;
+      if (r.cat && LEGACY_CAT[r.cat]) return [LEGACY_CAT[r.cat]];
+      return [];
+    }
+    // 상단에 보여줄 카테고리: 카테고리 표 + 후보에 붙어 있는 이름 (순서: 만든 순)
+    function allCategories() {
+      const names = [...categoryRows]
+        .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
+        .map(c => c.name);
+      placeRows.forEach(r => placeCats(r).forEach(n => {if (!names.includes(n)) names.push(n);}));
+      return names;
+    }
+    function saveLocalCats() {safeSet(LS_LOCAL_CATS, JSON.stringify(categoryRows));}
     const PHOTO_BUCKET = "place-photos";
 
     // 장소별 사진 { placeId: { url, path } }
@@ -791,15 +1020,15 @@
     let placeRows = [];
     function seedRows() {
       return SEED_PLACES.map((p, i) => ({
-        id: p.id, cat: p.cat, name: p.name, zh: p.zh || null, area: p.area || null,
+        id: p.id, categories: [LEGACY_CAT[p.cat] || p.cat], name: p.name, zh: p.zh || null, area: p.area || null,
         duration: p.time || null, description: p.desc || null, emoji: p.e || null,
         added_by: SEED_AUTHOR, created_at: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
       }));
     }
     function rowToPlace(r) {
       return {
-        id: r.id, cat: CAT_MAP[r.cat] ? r.cat : "sight",
-        e: r.emoji || CAT_MAP[r.cat]?.e || "📍",
+        id: r.id, cats: placeCats(r),
+        e: r.emoji || "📍",
         name: r.name, zh: r.zh || "", area: r.area || "미정", time: r.duration || "미정",
         desc: r.description || "", addedBy: r.added_by,
         custom: !!r.added_by && r.added_by !== SEED_AUTHOR,
@@ -839,8 +1068,10 @@
 
     const state = {
       me: null,
-      tab: "all",
+      view: "list",              // "list" | "result"
+      selected: [],              // 상단에서 고른 카테고리 (비어 있으면 전체)
       onlyEmpty: false,
+      loading: false,
       picks: {},                 // { person: { placeId: choice } }
     };
     CONFIG.PEOPLE.forEach(p => state.picks[p] = {});
@@ -858,37 +1089,77 @@
       else delete state.picks[row.person][row.place_id];
     }
 
-    async function loadAll() {
-      if (isLocal) {
-        try {Object.assign(state.picks, JSON.parse(safeGet(LS_LOCAL) || "{}"));} catch { }
-        try {placeRows = JSON.parse(safeGet(LS_LOCAL_PLACES) || "[]");} catch { }
-        if (!safeGet(LS_LOCAL_SEEDED)) {                      // 처음 한 번만 기본 후보를 채워 넣어요
-          seedRows().forEach(r => {if (!findRow(r.id)) placeRows.push(r);});
-          saveLocalPlaces(); safeSet(LS_LOCAL_SEEDED, "1");
-        }
-        try {photos = JSON.parse(safeGet(LS_LOCAL_PHOTOS) || "{}");} catch { }
-        CONFIG.PEOPLE.forEach(p => state.picks[p] = state.picks[p] || {});
-        setStatus(false, "로컬 모드 · 이 기기에만 저장돼요");
-        return;
-      }
-      sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-      const [picksRes, placesRes, photosRes] = await Promise.all([
-        sb.from("picks").select("person, place_id, choice"),
-        sb.from("places").select("*").order("created_at"),
-        sb.from("place_photos").select("place_id, url, path"),
-      ]);
-      if (photosRes.error) console.error(photosRes.error);
-      else photosRes.data.forEach(r => photos[r.place_id] = {url: r.url, path: r.path});
-      const firstErr = placesRes.error || picksRes.error;
-      if (firstErr) {
-        console.error(placesRes.error, picksRes.error);
-        loadError = errMsg(firstErr, "불러오기 실패");
-        setStatus(false, "불러오기 실패");
-        return;
-      }
-      placeRows = placesRes.data;
-      picksRes.data.forEach(applyRow);
+    // Supabase 주소 정리: 공백·끝 슬래시·/rest/v1 같은 경로가 붙어 있어도 프로젝트 주소만 남겨요
+    const SB_URL = (CONFIG.SUPABASE_URL || "").trim().replace(/\/+$/, "").replace(/\/(rest|auth|storage|realtime)\/v1.*$/i, "");
+    const SB_KEY = (CONFIG.SUPABASE_KEY || "").trim();
 
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject({code: "TIMEOUT", message: "응답 시간 초과"}), ms)),
+      ]);
+    }
+
+    // 연결 실패 원인 진단 → { title, detail, hints[] }
+    async function diagnose(error) {
+      const m = `${error?.code || ""} ${error?.message || ""}`;
+      const urlHint = `index.html의 <b>SUPABASE_URL</b>이 Supabase 대시보드 <b>Project Settings → API</b>의 <b>Project URL</b>과 똑같은지 확인해 주세요. 지금 값: <code>${esc(SB_URL || "(비어 있음)")}</code>`;
+
+      if (!/^https:\/\/[^\s/]+$/.test(SB_URL))
+        return {title: "Supabase 주소 형식이 맞지 않아요", hints: [urlHint, "주소는 <code>https://프로젝트ID.supabase.co</code> 형태여야 해요."]};
+      if (/42501|permission denied|row-level security/i.test(m))
+        return {title: "데이터에 접근할 권한이 없어요", hints: ["최신 <b>supabase-setup.sql</b> 전체를 SQL Editor에서 다시 실행해 주세요."]};
+      if (/42P01|PGRST205|does not exist|Could not find the table/i.test(m))
+        return {title: "테이블이 아직 없어요", hints: ["<b>supabase-setup.sql</b> 전체를 SQL Editor에서 실행해 주세요."]};
+      if (/Invalid API key|No API key|PGRST30|JWT|401/i.test(m))
+        return {title: "API 키가 맞지 않아요", hints: ["index.html의 <b>SUPABASE_KEY</b>에 <b>anon public</b> 키 또는 <b>Publishable</b> 키를 넣어 주세요. 앞뒤 공백이나 줄바꿈이 섞이지 않았는지도 확인해 주세요."]};
+
+      // 네트워크 계열(Failed to fetch, 시간 초과): 서버 주소 자체에 닿는지 한 번 더 확인
+      if (/TIMEOUT|Failed to fetch|NetworkError|Load failed|fetch/i.test(m)) {
+        let reachable = false;
+        try {await withTimeout(fetch(`${SB_URL}/auth/v1/health`, {headers: {apikey: SB_KEY}}), 6000); reachable = true;} catch { }
+        if (!reachable) {
+          return {
+            title: "Supabase 서버에 접속하지 못했어요",
+            detail: "브라우저가 서버 주소에 아예 닿지 못했어요. 아래 순서대로 확인해 주세요.",
+            hints: [
+              urlHint,
+              "Supabase 대시보드에서 프로젝트가 <b>Paused(일시정지)</b> 상태인지 확인해 주세요. 그렇다면 <b>Restore</b>를 누르고 1~2분 뒤 다시 시도해 주세요.",
+              "회사·공용 와이파이나 VPN, 보안 프로그램이 <code>supabase.co</code>를 막을 수 있어요. <b>휴대폰 데이터</b>로 열어 보세요.",
+            ],
+          };
+        }
+        return {
+          title: "서버에는 닿지만 데이터 요청이 막혔어요",
+          detail: "서버 주소는 정상이에요. 브라우저 쪽에서 요청이 차단된 것 같아요.",
+          hints: [
+            "광고 차단 확장 프로그램(AdBlock, uBlock 등)을 이 페이지에서 꺼 보세요.",
+            "시크릿 창이나 다른 브라우저로 열어 보세요.",
+          ],
+        };
+      }
+      return {title: "불러오지 못했어요", detail: error?.message || "", hints: ["잠시 후 다시 시도해 주세요. 계속되면 브라우저 Console의 오류 내용을 확인해 주세요."]};
+    }
+
+    function loadLocal() {
+      try {Object.assign(state.picks, JSON.parse(safeGet(LS_LOCAL) || "{}"));} catch { }
+      try {placeRows = JSON.parse(safeGet(LS_LOCAL_PLACES) || "[]");} catch { }
+      if (!safeGet(LS_LOCAL_SEEDED)) {                      // 처음 한 번만 기본 후보를 채워 넣어요
+        seedRows().forEach(r => {if (!findRow(r.id)) placeRows.push(r);});
+        saveLocalPlaces(); safeSet(LS_LOCAL_SEEDED, "1");
+      }
+      try {categoryRows = JSON.parse(safeGet(LS_LOCAL_CATS) || "null");} catch {categoryRows = null;}
+      if (!Array.isArray(categoryRows)) {categoryRows = seedCategoryRows(); saveLocalCats();}
+      try {photos = JSON.parse(safeGet(LS_LOCAL_PHOTOS) || "{}");} catch { }
+      CONFIG.PEOPLE.forEach(p => state.picks[p] = state.picks[p] || {});
+      setStatus("off", "로컬 모드 · 이 기기에만 저장돼요");
+    }
+
+    let channelStarted = false;
+    function startRealtime() {
+      if (channelStarted) return;
+      channelStarted = true;
+      setStatus("loading", "실시간 연결 중…");
       sb.channel("picks-live")
         .on("postgres_changes", {event: "*", schema: "public", table: "picks"}, payload => {
           if (payload.eventType === "DELETE") {
@@ -904,16 +1175,64 @@
           else upsertRow(payload.new);
           render();
         })
+        .on("postgres_changes", {event: "*", schema: "public", table: "categories"}, payload => {
+          if (payload.eventType === "DELETE") {
+            if (payload.old?.name) categoryRows = categoryRows.filter(c => c.name !== payload.old.name);
+          } else if (!categoryRows.some(c => c.name === payload.new.name)) {
+            categoryRows.push(payload.new);
+          }
+          render();
+        })
         .on("postgres_changes", {event: "*", schema: "public", table: "place_photos"}, payload => {
           if (payload.eventType === "DELETE") {if (payload.old?.place_id) delete photos[payload.old.place_id];}
           else photos[payload.new.place_id] = {url: payload.new.url, path: payload.new.path};
           render();
         })
         .subscribe(status => {
-          if (status === "SUBSCRIBED") setStatus(true, "실시간 동기화 중");
-          else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setStatus(false, "실시간 연결 끊김 · 새로고침해 주세요");
+          if (status === "SUBSCRIBED") setStatus("on", "실시간 동기화 중");
+          else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setStatus("off", "실시간 연결 끊김 · 저장은 돼요 (새로고침하면 최신으로 보여요)");
+          else if (status === "CLOSED") setStatus("off", "실시간 연결 종료");
         });
-      setStatus(false, "저장됨 · 실시간 연결 중…");
+    }
+
+    async function loadAll() {
+      if (isLocal) {loadLocal(); return;}
+
+      state.loading = true; loadError = null;
+      setStatus("loading", "서버에 연결 중…");
+      render();
+
+      try {
+        if (!/^https:\/\/[^\s/]+$/.test(SB_URL)) throw {code: "BAD_URL", message: "invalid url"};
+        if (!sb) sb = window.supabase.createClient(SB_URL, SB_KEY);
+        const [picksRes, placesRes, photosRes, catsRes] = await withTimeout(Promise.all([
+          sb.from("picks").select("person, place_id, choice"),
+          sb.from("places").select("*").order("created_at"),
+          sb.from("place_photos").select("place_id, url, path"),
+          sb.from("categories").select("name, created_at").order("created_at"),
+        ]), 12000);
+        const firstErr = placesRes.error || picksRes.error || catsRes.error;
+        if (firstErr) throw firstErr;
+
+        placeRows = placesRes.data;
+        categoryRows = catsRes.data;
+        CONFIG.PEOPLE.forEach(p => state.picks[p] = {});
+        picksRes.data.forEach(applyRow);
+        photos = {};
+        if (photosRes.error) console.error(photosRes.error);
+        else photosRes.data.forEach(r => photos[r.place_id] = {url: r.url, path: r.path});
+
+        state.loading = false;
+        render();
+        startRealtime();
+      } catch (err) {
+        console.error("[불러오기 실패]", err);
+        setStatus("err", "연결 실패 · 원인 확인 중…");
+        loadError = await diagnose(err);
+        state.loading = false;
+        setStatus("err", "연결 실패");
+        render();
+      }
     }
 
     async function setPick(placeId, choice) {
@@ -940,6 +1259,50 @@
         render();
         toast(errMsg(res.error, "저장 실패"));
       }
+    }
+
+    /* ---------- 카테고리 CRUD ---------- */
+    async function ensureCategories(names) {
+      const missing = [...new Set(names)].filter(n => !categoryRows.some(c => c.name === n));
+      if (!missing.length) return true;
+      const now = Date.now();
+      const rows = missing.map((name, i) => ({name, created_at: new Date(now + i).toISOString()}));
+      categoryRows.push(...rows);
+      if (isLocal) {saveLocalCats(); return true;}
+      const {error} = await sb.from("categories").upsert(rows, {onConflict: "name", ignoreDuplicates: true});
+      if (error) {
+        console.error(error);
+        categoryRows = categoryRows.filter(c => !missing.includes(c.name));
+        toast(errMsg(error, "카테고리 저장 실패"));
+        return false;
+      }
+      return true;
+    }
+
+    async function deleteCategory(name) {
+      // 1) 이 카테고리가 붙은 후보에서 빼고
+      const affected = placeRows.filter(r => placeCats(r).includes(name));
+      for (const r of affected) {
+        const ok = await updatePlace(r.id, {
+          categories: placeCats(r).filter(n => n !== name),
+          updated_at: new Date().toISOString(),
+        });
+        if (!ok) return false;
+      }
+      // 2) 카테고리 목록에서 지워요
+      const backup = categoryRows;
+      categoryRows = categoryRows.filter(c => c.name !== name);
+      state.selected = state.selected.filter(n => n !== name);
+      render();
+      if (isLocal) {saveLocalCats(); return true;}
+      const {error} = await sb.from("categories").delete().eq("name", name);
+      if (error) {
+        console.error(error);
+        categoryRows = backup; render();
+        toast(errMsg(error, "카테고리 삭제 실패"));
+        return false;
+      }
+      return true;
     }
 
     /* ---------- 후보 CRUD ---------- */
@@ -1072,8 +1435,10 @@
     /* ---------- UI helpers ---------- */
     function esc(s) {return String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));}
     function other() {return CONFIG.PEOPLE.find(p => p !== state.me);}
-    function setStatus(on, text) {
-      document.getElementById("liveDot").classList.toggle("on", on);
+    // mode: "loading" | "on" | "off" | "err"
+    function setStatus(mode, text) {
+      const dot = document.getElementById("liveDot");
+      dot.className = "live" + (mode === "off" ? "" : " " + mode);
       document.getElementById("statusText").textContent = text;
     }
     let toastTimer;
@@ -1083,22 +1448,40 @@
       clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
     }
 
+    function tabCategories() {
+      const list = allCategories();
+      if (placeRows.some(r => !placeCats(r).length)) list.push(UNCATEGORIZED);
+      return list;
+    }
+
     function renderTabs() {
-      const tabs = [{id: "all", label: "전체"}, ...CATEGORIES, {id: "result", label: "🤝 결과 보기"}];
-      document.getElementById("tabs").innerHTML = tabs.map(t =>
-        `<button class="tab ${t.id === "result" ? "result" : ""} ${state.tab === t.id ? "active" : ""}" data-tab="${t.id}">${esc(t.label)}</button>`
-      ).join("");
+      const cats = tabCategories();
+      state.selected = state.selected.filter(n => cats.includes(n));     // 지워진 카테고리는 선택 해제
+      const inList = state.view === "list";
+      document.getElementById("tabs").innerHTML =
+        `<button class="tab ${inList && !state.selected.length ? "active" : ""}" data-all="1">전체</button>` +
+        cats.map(n => `<button class="tab ${inList && state.selected.includes(n) ? "active" : ""}" data-cat="${esc(n)}">${esc(n)}</button>`).join("") +
+        `<button class="tab manage" data-manage="1">⚙️ 카테고리</button>` +
+        `<button class="tab result ${state.view === "result" ? "active" : ""}" data-view="result">🤝 결과 보기</button>`;
+    }
+
+    function matchesFilter(p) {
+      if (!state.selected.length) return true;
+      if (!p.cats.length) return state.selected.includes(UNCATEGORIZED);
+      return p.cats.some(c => state.selected.includes(c));
     }
 
     function cardHTML(p) {
       const mine = state.picks[state.me]?.[p.id];
       const theirs = state.picks[other()]?.[p.id];
-      const cat = CAT_MAP[p.cat];
+      const color = catColor(p.cats[0] || UNCATEGORIZED);
+      const shown = p.cats.length ? p.cats : [UNCATEGORIZED];
+      const badges = `<span class="cats">${shown.slice(0, 3).map(c => `<span class="cat">${esc(c)}</span>`).join("")}${shown.length > 3 ? `<span class="cat">+${shown.length - 3}</span>` : ""}</span>`;
       const map = `https://www.google.com/maps/search/${encodeURIComponent((p.zh || p.name) + " 上海")}`;
       const ph = photos[p.id];
       const thumb = ph
-        ? `<div class="thumb has-photo" style="background-image:url(&quot;${esc(ph.url)}&quot;)"><span class="cat">${esc(cat.label)}</span></div>`
-        : `<div class="thumb" style="background:${cat.color}"><span>${p.e}</span><span class="cat">${esc(cat.label)}</span></div>`;
+        ? `<div class="thumb has-photo" style="background-image:url(&quot;${esc(ph.url)}&quot;)">${badges}</div>`
+        : `<div class="thumb" style="background:${color}"><span>${p.e}</span>${badges}</div>`;
       return `
   <article class="card">
     ${thumb}
@@ -1119,19 +1502,19 @@
     function renderList() {
       const places = allPlaces();
       const list = places.filter(p =>
-        (state.tab === "all" || p.cat === state.tab) &&
+        matchesFilter(p) &&
         (!state.onlyEmpty || !state.picks[state.me][p.id])
       );
       const done = places.filter(p => state.picks[state.me][p.id]).length;
       return `
     ${isLocal ? `<div class="banner">⚙️ Supabase 설정 전이라 로컬 모드예요. 체크가 이 기기에만 저장되고 상대방과 공유되지 않아요.</div>` : ""}
-    ${loadError ? `<div class="banner err">⚠️ ${esc(loadError)}</div>` : ""}
-    ${!isLocal && !loadError && !places.length ? `<div class="banner">후보가 하나도 없어요. ＋ 후보 추가로 넣거나, supabase-setup.sql을 실행하면 기본 후보 29곳이 들어가요.</div>` : ""}
+    ${!isLocal && !places.length ? `<div class="banner">후보가 하나도 없어요. ＋ 후보 추가로 넣거나, supabase-setup.sql을 실행하면 기본 후보 29곳이 들어가요.</div>` : ""}
     <div class="toolbar">
       <span class="progress">${esc(state.me)}: ${done} / ${places.length}개 골랐어요</span>
       <label><input type="checkbox" id="onlyEmpty" ${state.onlyEmpty ? "checked" : ""}/> 안 고른 것만</label>
     </div>
-    <div class="grid">${list.length ? list.map(cardHTML).join("") : `<div class="empty">${state.onlyEmpty && places.length ? "모두 골랐어요 🎉" : "이 카테고리에 후보가 없어요"}</div>`}</div>`;
+    ${state.selected.length ? `<div class="filter-note">${state.selected.map(esc).join(" · ")} 후보 ${list.length}곳 <button class="linkbtn" data-all="1">선택 해제</button></div>` : ""}
+    <div class="grid">${list.length ? list.map(cardHTML).join("") : `<div class="empty">${state.onlyEmpty && places.length ? "모두 골랐어요 🎉" : "고른 카테고리에 후보가 없어요"}</div>`}</div>`;
     }
 
     function groupResults() {
@@ -1169,7 +1552,7 @@
         const ph = photos[p.id];
         const icon = ph ? `<span class="ph" style="background-image:url(&quot;${esc(ph.url)}&quot;)"></span>` : `<span class="e">${p.e}</span>`;
         return `<div class="row">${icon}
-      <span class="t">${esc(p.name)}<small>${esc(CAT_MAP[p.cat].label)} · ${esc(p.area)} · ${esc(p.time)}</small></span>
+      <span class="t">${esc(p.name)}<small>${esc(p.cats.join(", ") || UNCATEGORIZED)} · ${esc(p.area)} · ${esc(p.time)}</small></span>
       <span class="who">${esc(a)} ${x ? CHOICE_MAP[x].short : "-"}<br/>${esc(b)} ${y ? CHOICE_MAP[y].short : "-"}</span></div>`;
       };
       const ids = new Set(allPlaces().map(p => p.id));
@@ -1197,11 +1580,33 @@
       return lines.join("\n");
     }
 
+    function renderLoading() {
+      const card = `<div class="sk-card"><div class="sk sk-thumb"></div><div class="sk-body">
+    <div class="sk" style="height:18px;width:55%"></div><div class="sk" style="height:12px;width:40%"></div>
+    <div class="sk" style="height:12px;width:90%"></div><div class="sk" style="height:34px"></div></div></div>`;
+      return `<div class="loading-msg"><span class="spinner"></span>상하이 후보를 불러오는 중이에요…</div>
+    <div class="grid">${card.repeat(4)}</div>`;
+    }
+
+    function renderError() {
+      const e = loadError;
+      return `<div class="errbox">
+    <h2>⚠️ ${esc(e.title)}</h2>
+    ${e.detail ? `<p>${esc(e.detail)}</p>` : ""}
+    <ol>${e.hints.map(x => `<li>${x}</li>`).join("")}</ol>
+    <button class="btn" id="retryBtn">🔄 다시 시도</button>
+  </div>`;
+    }
+
     function render() {
-      if (!state.me) return;
-      document.getElementById("meName").textContent = state.me;
+      const main = document.getElementById("main");
+      if (state.me) document.getElementById("meName").textContent = state.me;
       renderTabs();
-      document.getElementById("main").innerHTML = state.tab === "result" ? renderResult() : renderList();
+      if (state.loading) {main.innerHTML = renderLoading(); return;}
+      if (loadError) {main.innerHTML = renderError(); return;}
+      if (!state.me) return;
+      main.innerHTML = state.view === "result" ? renderResult() : renderList();
+      if (document.getElementById("catModal").classList.contains("show")) renderCatMgr();
     }
 
     function askWho() {
@@ -1214,6 +1619,29 @@
     // 폼 상태: editingId가 있으면 수정 모드, 없으면 추가 모드
     let editingId = null;
     let removePhotoFlag = false;
+    let formCats = [];          // 폼에서 고른 카테고리
+    let formExtraCats = [];     // 폼에서 새로 입력한(아직 저장 전) 카테고리
+
+    function renderCatPicker() {
+      const names = [...allCategories(), ...formExtraCats.filter(n => !allCategories().includes(n))];
+      formCats.forEach(n => {if (!names.includes(n)) names.push(n);});
+      document.getElementById("catPicker").innerHTML = names.length
+        ? names.map(n => `<button type="button" class="fcat ${formCats.includes(n) ? "on" : ""}" data-fcat="${esc(n)}">${esc(n)}</button>`).join("")
+        : `<span class="opt" style="font-weight:400;color:var(--sub)">아래에 새 카테고리를 입력해 주세요</span>`;
+    }
+    function addFormCat() {
+      const input = document.getElementById("catNewInput");
+      const n = normCat(input.value);
+      input.value = "";
+      if (!n) return;
+      if (n === UNCATEGORIZED) {toast(`'${UNCATEGORIZED}'는 쓸 수 없는 이름이에요`); return;}
+      if (!formCats.includes(n)) formCats.push(n);
+      if (!allCategories().includes(n) && !formExtraCats.includes(n)) formExtraCats.push(n);
+      renderCatPicker();
+    }
+    document.getElementById("catNewInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.isComposing) {e.preventDefault(); addFormCat();}
+    });
 
     function showPreview(url) {
       const pv = document.getElementById("addPreview");
@@ -1232,20 +1660,17 @@
       editingId = id || null;
       removePhotoFlag = false;
 
-      const sel = document.getElementById("addCat");
-      sel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join("");
-
       const row = editingId ? findRow(editingId) : null;
+      formExtraCats = [];
+      formCats = row ? [...placeCats(row)] : state.selected.filter(n => n !== UNCATEGORIZED);  // 보고 있던 카테고리를 기본값으로
+      renderCatPicker();
       if (row) {
-        sel.value = CAT_MAP[row.cat] ? row.cat : "sight";
         form.name.value = row.name || "";
         form.zh.value = row.zh || "";
         form.area.value = row.area || "";
         form.duration.value = row.duration || "";
         form.description.value = row.description || "";
         form.emoji.value = row.emoji || "";
-      } else if (CAT_MAP[state.tab]) {
-        sel.value = state.tab;                                // 보고 있던 탭을 기본값으로
       }
 
       const ph = editingId ? photos[editingId] : null;
@@ -1265,7 +1690,7 @@
     function closeForm() {
       document.getElementById("addForm").reset();
       clearObjectUrl(); showPreview("");
-      editingId = null; removePhotoFlag = false;
+      editingId = null; removePhotoFlag = false; formCats = []; formExtraCats = [];
       document.getElementById("addModal").classList.remove("show");
     }
 
@@ -1298,13 +1723,42 @@
       await deletePlace(id);
     });
 
+    function renderCatMgr() {
+      const counts = {};
+      placeRows.forEach(r => placeCats(r).forEach(n => counts[n] = (counts[n] || 0) + 1));
+      const cats = allCategories();
+      document.getElementById("catMgrList").innerHTML = cats.length
+        ? cats.map(n => `<div class="row"><span class="t">${esc(n)}<small>후보 ${counts[n] || 0}곳</small></span>
+        <button class="del" data-delcat="${esc(n)}">삭제</button></div>`).join("")
+        : `<div class="empty">카테고리가 없어요</div>`;
+    }
+    function openCatMgr() {
+      document.getElementById("catMgrInput").value = "";
+      renderCatMgr();
+      document.getElementById("catModal").classList.add("show");
+    }
+    async function addMgrCat() {
+      const input = document.getElementById("catMgrInput");
+      const n = normCat(input.value);
+      if (!n) return;
+      if (n === UNCATEGORIZED) {toast(`'${UNCATEGORIZED}'는 쓸 수 없는 이름이에요`); return;}
+      if (allCategories().includes(n)) {toast("이미 있는 카테고리예요"); return;}
+      input.value = "";
+      if (await ensureCategories([n])) {render(); renderCatMgr(); toast(`'${n}' 카테고리를 만들었어요`);}
+    }
+    document.getElementById("catMgrInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.isComposing) {e.preventDefault(); addMgrCat();}
+    });
+
     document.getElementById("addForm").addEventListener("submit", async e => {
       e.preventDefault();
       const f = new FormData(e.target);
       const v = k => (f.get(k) || "").toString().trim();
       if (!v("name")) return;
+      if (normCat(document.getElementById("catNewInput").value)) addFormCat();   // 입력만 하고 추가를 안 눌렀어도 반영
+      if (!formCats.length) {toast("카테고리를 1개 이상 골라 주세요"); return;}
       const fields = {
-        cat: v("cat"), name: v("name"), zh: v("zh") || null,
+        categories: [...formCats], name: v("name"), zh: v("zh") || null,
         area: v("area") || null, duration: v("duration") || null,
         description: v("description") || null, emoji: v("emoji") || null,
       };
@@ -1314,6 +1768,7 @@
 
       let id = editingId, ok;
       const wantRemovePhoto = removePhotoFlag;
+      if (!(await ensureCategories(fields.categories))) {btn.disabled = false; return;}
       if (id) {
         ok = await updatePlace(id, {...fields, updated_at: new Date().toISOString()});
       } else {
@@ -1325,22 +1780,51 @@
 
       const isEdit = !!editingId;
       closeForm();
-      state.tab = fields.cat; state.onlyEmpty = false; render();
+      state.view = "list"; state.onlyEmpty = false;
+      if (state.selected.length && !fields.categories.some(c => state.selected.includes(c))) state.selected = [];
+      render();
       toast(isEdit ? `'${fields.name}' 수정했어요` : `'${fields.name}' 추가했어요`);
       if (file) await setPhoto(id, file);
       else if (wantRemovePhoto) await removePhoto(id);
     });
 
     document.addEventListener("click", async e => {
-      const t = e.target.closest("[data-tab],[data-place],[data-who],[data-edit],#meChip,#copyBtn,#addOpen,#addCancel");
+      const t = e.target.closest("[data-all],[data-cat],[data-manage],[data-view],[data-fcat],[data-delcat],[data-place],[data-who],[data-edit],#meChip,#copyBtn,#addOpen,#addCancel,#retryBtn,#catNewAdd,#catMgrAdd,#catMgrClose");
       if (!t) {
         if (e.target.id === "addModal") closeForm();        // 바깥 클릭 시 닫기
+        if (e.target.id === "catModal") e.target.classList.remove("show");
         return;
       }
+      if (t.dataset.fcat !== undefined) {
+        const n = t.dataset.fcat;
+        formCats = formCats.includes(n) ? formCats.filter(x => x !== n) : [...formCats, n];
+        renderCatPicker(); return;
+      }
+      if (t.id === "catNewAdd") {addFormCat(); return;}
+      if (t.id === "catMgrAdd") {addMgrCat(); return;}
+      if (t.id === "catMgrClose") {document.getElementById("catModal").classList.remove("show"); return;}
+      if (t.dataset.delcat !== undefined) {
+        const n = t.dataset.delcat;
+        const cnt = placeRows.filter(r => placeCats(r).includes(n)).length;
+        if (confirm(`'${n}' 카테고리를 삭제할까요?` + (cnt ? `\n후보 ${cnt}곳에서 이 카테고리가 빠져요. (후보는 그대로 남아요)` : ""))) {
+          if (await deleteCategory(n)) {renderCatMgr(); toast(`'${n}' 카테고리를 삭제했어요`);}
+        }
+        return;
+      }
+      if (t.dataset.manage) {if (loadError) return; openCatMgr(); return;}
+      if (t.dataset.all) {state.selected = []; state.view = "list"; render(); window.scrollTo({top: 0}); return;}
+      if (t.dataset.cat !== undefined) {
+        const n = t.dataset.cat;
+        if (state.view !== "list") {state.view = "list"; state.selected = [n];}
+        else state.selected = state.selected.includes(n) ? state.selected.filter(x => x !== n) : [...state.selected, n];
+        render(); window.scrollTo({top: 0}); return;
+      }
+      if (t.dataset.view) {state.view = t.dataset.view; render(); window.scrollTo({top: 0}); return;}
+      if (t.id === "retryBtn") {await loadAll(); return;}
+      if (loadError && t.id === "addOpen") {toast("서버에 연결된 뒤에 추가할 수 있어요"); return;}
       if (t.id === "addOpen") openForm();
       else if (t.id === "addCancel") closeForm();
       else if (t.dataset.edit) openForm(t.dataset.edit);
-      else if (t.dataset.tab) {state.tab = t.dataset.tab; render(); window.scrollTo({top: 0});}
       else if (t.dataset.place) setPick(t.dataset.place, t.dataset.v);
       else if (t.dataset.who) {
         state.me = t.dataset.who; safeSet(LS_ME, state.me);
@@ -1359,10 +1843,11 @@
 
     /* ---------- start ---------- */
     (async function init() {
-      await loadAll();
       const saved = safeGet(LS_ME);
-      if (saved && CONFIG.PEOPLE.includes(saved)) {state.me = saved; render();}
-      else askWho();
+      if (saved && CONFIG.PEOPLE.includes(saved)) state.me = saved;
+      else askWho();                     // 이름 고르는 동안 뒤에서 불러와요
+      await loadAll();
+      render();
     })();
   </script>
 </body>
