@@ -1,624 +1,1105 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>상하이 여행 후보 고르기</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --bg: #f6f4f1;
-    --card: #ffffff;
-    --ink: #1d1b19;
-    --sub: #6f6a64;
-    --line: #e6e1da;
-    --accent: #c8102e;
-    --must: #e0245e;
-    --ok: #f2a900;
-    --pass: #8a8f98;
-    --radius: 16px;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-  header {
-    position: sticky; top: 0; z-index: 10;
-    background: rgba(246,244,241,.92); backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line);
-  }
-  .top { max-width: 960px; margin: 0 auto; padding: 14px 16px 8px; display: flex; align-items: center; gap: 12px; }
-  .top h1 { font-size: 18px; margin: 0; flex: 1; letter-spacing: -0.02em; }
-  .top h1 small { display: block; font-size: 12px; font-weight: 500; color: var(--sub); margin-top: 2px; }
-  .me-chip {
-    border: 1px solid var(--line); background: var(--card); border-radius: 999px;
-    padding: 7px 12px; font-size: 13px; cursor: pointer; white-space: nowrap;
-  }
-  .me-chip b { color: var(--accent); }
-  .tabs { max-width: 960px; margin: 0 auto; padding: 4px 12px 10px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
-    border-radius: 999px; padding: 7px 13px; font-size: 14px; cursor: pointer;
-  }
-  .tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .tab.result { border-color: var(--accent); color: var(--accent); }
-  .tab.result.active { background: var(--accent); color: #fff; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>상하이 여행 후보 고르기</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #f6f4f1;
+      --card: #ffffff;
+      --ink: #1d1b19;
+      --sub: #6f6a64;
+      --line: #e6e1da;
+      --accent: #c8102e;
+      --must: #e0245e;
+      --ok: #f2a900;
+      --pass: #8a8f98;
+      --radius: 16px;
+    }
 
-  main { max-width: 960px; margin: 0 auto; padding: 14px 16px 80px; }
-  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; font-size: 13px; color: var(--sub); }
-  .toolbar label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-  .progress { font-weight: 600; color: var(--ink); }
+    * {
+      box-sizing: border-box;
+    }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-  .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-    overflow: hidden; display: flex; flex-direction: column;
-  }
-  .thumb { height: 84px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 40px; }
-  .thumb .cat { font-size: 12px; font-weight: 600; color: rgba(0,0,0,.55); background: rgba(255,255,255,.6); padding: 4px 9px; border-radius: 999px; }
-  .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-  .name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
-  .name .zh { font-weight: 500; color: var(--sub); font-size: 13px; margin-left: 4px; }
-  .meta { font-size: 12px; color: var(--sub); display: flex; gap: 8px; flex-wrap: wrap; }
-  .meta a { color: var(--sub); }
-  .desc { font-size: 14px; line-height: 1.5; color: #3b3834; flex: 1; }
-  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
-  .choice {
-    border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 4px;
-    font-size: 13px; cursor: pointer; color: var(--ink); transition: transform .08s;
-  }
-  .choice:active { transform: scale(.96); }
-  .choice.on[data-v="must"] { background: var(--must); border-color: var(--must); color: #fff; }
-  .choice.on[data-v="ok"]   { background: var(--ok);   border-color: var(--ok);   color: #fff; }
-  .choice.on[data-v="pass"] { background: var(--pass); border-color: var(--pass); color: #fff; }
-  .other { font-size: 12px; color: var(--sub); padding-top: 2px; }
-  .other b { color: var(--ink); }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  .section { margin-bottom: 22px; }
-  .section h2 { font-size: 15px; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; }
-  .section h2 .n { font-size: 12px; color: var(--sub); font-weight: 500; }
-  .section .hint { font-size: 12px; color: var(--sub); margin: -4px 0 8px; }
-  .rows { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-  .row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--line); font-size: 14px; }
-  .row:first-child { border-top: 0; }
-  .row .e { font-size: 20px; }
-  .row .t { flex: 1; }
-  .row .t small { display: block; color: var(--sub); font-size: 12px; }
-  .row .who { font-size: 12px; color: var(--sub); text-align: right; white-space: nowrap; }
-  .empty { padding: 14px; color: var(--sub); font-size: 13px; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(246, 244, 241, .92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
 
-  .btn {
-    border: 0; background: var(--ink); color: #fff; border-radius: 12px; padding: 12px 16px;
-    font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
-  }
-  .banner { font-size: 12px; background: #fff4d6; border: 1px solid #f0dc9c; color: #6b5300; padding: 8px 12px; border-radius: 10px; margin-bottom: 12px; }
+    .top {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 16px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
-  .modal-bg.show { display: flex; }
-  .modal { background: #fff; border-radius: 20px; padding: 22px; width: 100%; max-width: 340px; text-align: center; }
-  .modal h3 { margin: 0 0 6px; font-size: 18px; }
-  .modal p { margin: 0 0 16px; color: var(--sub); font-size: 14px; }
-  .modal .who-btns { display: grid; gap: 8px; }
+    .top h1 {
+      font-size: 18px;
+      margin: 0;
+      flex: 1;
+      letter-spacing: -0.02em;
+    }
 
-  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 13px; opacity: 0; transition: .2s; pointer-events: none; z-index: 60; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .live { width: 8px; height: 8px; border-radius: 50%; background: #bbb; display: inline-block; margin-right: 4px; vertical-align: middle; }
-  .live.on { background: #2bb673; }
+    .top h1 small {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--sub);
+      margin-top: 2px;
+    }
 
-  /* 후보 추가 */
-  .fab {
-    position: fixed; right: 18px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 20;
-    background: var(--accent); color: #fff; border: 0; border-radius: 999px;
-    padding: 14px 20px; font-size: 15px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 6px 18px rgba(200,16,46,.35);
-  }
-  .added { font-size: 12px; color: var(--sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 2px; }
-  .del { border: 0; background: none; color: var(--sub); font-size: 12px; text-decoration: underline; cursor: pointer; padding: 0; }
-  .modal.form { max-width: 420px; text-align: left; max-height: 90vh; overflow-y: auto; }
-  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
-  .field .opt { color: var(--sub); font-weight: 400; }
-  .field input, .field select, .field textarea {
-    font: inherit; font-weight: 400; font-size: 15px; padding: 10px 12px;
-    border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink);
-  }
-  .field textarea { resize: vertical; min-height: 64px; }
-  .row2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
-  .field input, .field select, .field textarea { width: 100%; min-width: 0; }
-  .toast { bottom: calc(86px + env(safe-area-inset-bottom)); }
-  .form-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 4px; }
-  .btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
-  .btn:disabled { opacity: .5; }
+    .me-chip {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
 
-  /* 사진 */
-  .thumb.has-photo {
-    height: 170px; background-size: cover; background-position: center;
-    align-items: flex-start; justify-content: flex-end; padding-top: 12px;
-  }
-  .linkbtn { border: 0; background: none; color: var(--sub); font-size: 12px; text-decoration: underline; cursor: pointer; padding: 0; font-family: inherit; }
-  .row .ph { width: 36px; height: 36px; border-radius: 8px; background-size: cover; background-position: center; flex: none; }
-  .photo-pick { display: flex; align-items: center; gap: 10px; }
-  .photo-preview { width: 64px; height: 64px; border-radius: 10px; background: #f0ece6 center/cover; flex: none; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-  .photo-pick input[type=file] { font-size: 13px; padding: 6px; }
-  .photo-ctl { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; flex: 1; }
-  .btn.danger { background: #fff; color: var(--must); border: 1px solid #f3c2cf; margin-top: 10px; }
-  .banner.err { background: #fde8ec; border-color: #f3c2cf; color: #8a1230; }
-</style>
+    .me-chip b {
+      color: var(--accent);
+    }
+
+    .tabs {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 4px 12px 10px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      flex: none;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    .tab.result {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tab.result.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 16px 80px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    .toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .progress {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .thumb {
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 40px;
+    }
+
+    .thumb .cat {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(0, 0, 0, .55);
+      background: rgba(255, 255, 255, .6);
+      padding: 4px 9px;
+      border-radius: 999px;
+    }
+
+    .body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .name .zh {
+      font-weight: 500;
+      color: var(--sub);
+      font-size: 13px;
+      margin-left: 4px;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: var(--sub);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta a {
+      color: var(--sub);
+    }
+
+    .desc {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #3b3834;
+      flex: 1;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .choice {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 4px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--ink);
+      transition: transform .08s;
+    }
+
+    .choice:active {
+      transform: scale(.96);
+    }
+
+    .choice.on[data-v="must"] {
+      background: var(--must);
+      border-color: var(--must);
+      color: #fff;
+    }
+
+    .choice.on[data-v="ok"] {
+      background: var(--ok);
+      border-color: var(--ok);
+      color: #fff;
+    }
+
+    .choice.on[data-v="pass"] {
+      background: var(--pass);
+      border-color: var(--pass);
+      color: #fff;
+    }
+
+    .other {
+      font-size: 12px;
+      color: var(--sub);
+      padding-top: 2px;
+    }
+
+    .other b {
+      color: var(--ink);
+    }
+
+    .section {
+      margin-bottom: 22px;
+    }
+
+    .section h2 {
+      font-size: 15px;
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section h2 .n {
+      font-size: 12px;
+      color: var(--sub);
+      font-weight: 500;
+    }
+
+    .section .hint {
+      font-size: 12px;
+      color: var(--sub);
+      margin: -4px 0 8px;
+    }
+
+    .rows {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .row:first-child {
+      border-top: 0;
+    }
+
+    .row .e {
+      font-size: 20px;
+    }
+
+    .row .t {
+      flex: 1;
+    }
+
+    .row .t small {
+      display: block;
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .row .who {
+      font-size: 12px;
+      color: var(--sub);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .empty {
+      padding: 14px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    .btn {
+      border: 0;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .banner {
+      font-size: 12px;
+      background: #fff4d6;
+      border: 1px solid #f0dc9c;
+      color: #6b5300;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+    }
+
+    .modal-bg.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 22px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+    }
+
+    .modal h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .modal p {
+      margin: 0 0 16px;
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .modal .who-btns {
+      display: grid;
+      gap: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      transition: .2s;
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .live {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #bbb;
+      display: inline-block;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .live.on {
+      background: #2bb673;
+    }
+
+    /* 후보 추가 */
+    .fab {
+      position: fixed;
+      right: 18px;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      z-index: 20;
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(200, 16, 46, .35);
+    }
+
+    .added {
+      font-size: 12px;
+      color: var(--sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px dashed var(--line);
+      padding-top: 8px;
+      margin-top: 2px;
+    }
+
+    .del {
+      border: 0;
+      background: none;
+      color: var(--sub);
+      font-size: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .modal.form {
+      max-width: 420px;
+      text-align: left;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .field .opt {
+      color: var(--sub);
+      font-weight: 400;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      font: inherit;
+      font-weight: 400;
+      font-size: 15px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 64px;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .toast {
+      bottom: calc(86px + env(safe-area-inset-bottom));
+    }
+
+    .form-btns {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn.ghost {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .btn:disabled {
+      opacity: .5;
+    }
+
+    /* 사진 */
+    .thumb.has-photo {
+      height: 170px;
+      background-size: cover;
+      background-position: center;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding-top: 12px;
+    }
+
+    .linkbtn {
+      border: 0;
+      background: none;
+      color: var(--sub);
+      font-size: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .row .ph {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+      flex: none;
+    }
+
+    .photo-pick {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .photo-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      background: #f0ece6 center/cover;
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .photo-pick input[type=file] {
+      font-size: 13px;
+      padding: 6px;
+    }
+
+    .photo-ctl {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .btn.danger {
+      background: #fff;
+      color: var(--must);
+      border: 1px solid #f3c2cf;
+      margin-top: 10px;
+    }
+
+    .banner.err {
+      background: #fde8ec;
+      border-color: #f3c2cf;
+      color: #8a1230;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div class="top">
-    <h1>🇨🇳 상하이 어디 갈까?<small id="status"><span class="live" id="liveDot"></span><span id="statusText">연결 중…</span></small></h1>
-    <button class="me-chip" id="meChip">나: <b id="meName">-</b> ⇄</button>
-  </div>
-  <nav class="tabs" id="tabs"></nav>
-</header>
-
-<main id="main"></main>
-
-<div class="modal-bg" id="whoModal">
-  <div class="modal">
-    <h3>누구세요? 👋</h3>
-    <p>선택한 이름으로 체크가 저장돼요.<br/>나중에 위쪽 버튼으로 바꿀 수 있어요.</p>
-    <div class="who-btns" id="whoBtns"></div>
-  </div>
-</div>
-
-<button class="fab" id="addOpen">＋ 후보 추가</button>
-
-<div class="modal-bg" id="addModal">
-  <form class="modal form" id="addForm" autocomplete="off">
-    <h3 id="formTitle">새 후보 추가 ✍️</h3>
-    <p id="formDesc">추가한 후보는 두 사람 모두에게 보여요.</p>
-    <label class="field">카테고리
-      <select name="cat" id="addCat"></select>
-    </label>
-    <label class="field">이름
-      <input name="name" required maxlength="40" placeholder="예: 쟈쟈탕바오" />
-    </label>
-    <label class="field">중국어 이름 <span class="opt">(선택 · 지도 검색에 써요)</span>
-      <input name="zh" maxlength="40" placeholder="예: 佳家汤包" />
-    </label>
-    <div class="row2">
-      <label class="field">지역 <span class="opt">(선택)</span>
-        <input name="area" maxlength="20" placeholder="예: 황푸" />
-      </label>
-      <label class="field">소요 시간 <span class="opt">(선택)</span>
-        <input name="duration" maxlength="20" placeholder="예: 1시간" />
-      </label>
+  <header>
+    <div class="top">
+      <h1>🇨🇳 상하이 어디 갈까?<small id="status"><span class="live" id="liveDot"></span><span id="statusText">연결
+            중…</span></small></h1>
+      <button class="me-chip" id="meChip">나: <b id="meName">-</b> ⇄</button>
     </div>
-    <label class="field">한 줄 설명 <span class="opt">(선택)</span>
-      <textarea name="description" maxlength="200" placeholder="왜 가고 싶은지 적어 주세요"></textarea>
-    </label>
-    <div class="field">사진 <span class="opt">(선택)</span>
-      <div class="photo-pick">
-        <div class="photo-preview" id="addPreview">📷</div>
-        <div class="photo-ctl">
-          <input type="file" name="photo" id="addPhoto" accept="image/*" />
-          <button type="button" class="linkbtn" id="photoRemove" hidden>현재 사진 삭제</button>
+    <nav class="tabs" id="tabs"></nav>
+  </header>
+
+  <main id="main"></main>
+
+  <div class="modal-bg" id="whoModal">
+    <div class="modal">
+      <h3>누구세요? 👋</h3>
+      <p>선택한 이름으로 체크가 저장돼요.<br />나중에 위쪽 버튼으로 바꿀 수 있어요.</p>
+      <div class="who-btns" id="whoBtns"></div>
+    </div>
+  </div>
+
+  <button class="fab" id="addOpen">＋ 후보 추가</button>
+
+  <div class="modal-bg" id="addModal">
+    <form class="modal form" id="addForm" autocomplete="off">
+      <h3 id="formTitle">새 후보 추가 ✍️</h3>
+      <p id="formDesc">추가한 후보는 두 사람 모두에게 보여요.</p>
+      <label class="field">카테고리
+        <select name="cat" id="addCat"></select>
+      </label>
+      <label class="field">이름
+        <input name="name" required maxlength="40" placeholder="예: 쟈쟈탕바오" />
+      </label>
+      <label class="field">중국어 이름 <span class="opt">(선택 · 지도 검색에 써요)</span>
+        <input name="zh" maxlength="40" placeholder="예: 佳家汤包" />
+      </label>
+      <div class="row2">
+        <label class="field">지역 <span class="opt">(선택)</span>
+          <input name="area" maxlength="20" placeholder="예: 황푸" />
+        </label>
+        <label class="field">소요 시간 <span class="opt">(선택)</span>
+          <input name="duration" maxlength="20" placeholder="예: 1시간" />
+        </label>
+      </div>
+      <label class="field">한 줄 설명 <span class="opt">(선택)</span>
+        <textarea name="description" maxlength="200" placeholder="왜 가고 싶은지 적어 주세요"></textarea>
+      </label>
+      <div class="field">사진 <span class="opt">(선택)</span>
+        <div class="photo-pick">
+          <div class="photo-preview" id="addPreview">📷</div>
+          <div class="photo-ctl">
+            <input type="file" name="photo" id="addPhoto" accept="image/*" />
+            <button type="button" class="linkbtn" id="photoRemove" hidden>현재 사진 삭제</button>
+          </div>
         </div>
       </div>
-    </div>
-    <label class="field">이모지 <span class="opt">(선택 · 사진이 없을 때 보여요)</span>
-      <input name="emoji" maxlength="4" placeholder="예: 🍜" />
-    </label>
-    <div class="form-btns">
-      <button type="button" class="btn ghost" id="addCancel">취소</button>
-      <button type="submit" class="btn" id="addSubmit">추가하기</button>
-    </div>
-    <button type="button" class="btn danger" id="formDelete" hidden>🗑 이 후보 삭제</button>
-  </form>
-</div>
+      <label class="field">이모지 <span class="opt">(선택 · 사진이 없을 때 보여요)</span>
+        <input name="emoji" maxlength="4" placeholder="예: 🍜" />
+      </label>
+      <div class="form-btns">
+        <button type="button" class="btn ghost" id="addCancel">취소</button>
+        <button type="submit" class="btn" id="addSubmit">추가하기</button>
+      </div>
+      <button type="button" class="btn danger" id="formDelete" hidden>🗑 이 후보 삭제</button>
+    </form>
+  </div>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<script>
-/* =========================================================
- * 1) 설정: Supabase 정보와 두 사람 이름을 입력하세요
- *    (값을 비워 두면 '로컬 모드'로 동작해요 — 이 기기에만 저장)
- * ========================================================= */
-const CONFIG = {
-  SUPABASE_URL: "https://supabase.com/dashboard/project/mnxupkymxhubfahiditk",          // 예: https://abcdxyz.supabase.co
-  SUPABASE_KEY: "sb_publishable_RWgM9cUhuWATL2corxgsEw_KRthhlq5",     // anon public 키 또는 Publishable 키
-  PEOPLE: ["승은", "하율"],                       // 두 사람 이름 (예: ["지민", "수아"])
-};
+  <script>
+    /* =========================================================
+     * 1) 설정: Supabase 정보와 두 사람 이름을 입력하세요
+     *    (값을 비워 두면 '로컬 모드'로 동작해요 — 이 기기에만 저장)
+     * ========================================================= */
+    const CONFIG = {
+      SUPABASE_URL: "https://supabase.com/dashboard/project/mnxupkymxhubfahiditk",          // 예: https://abcdxyz.supabase.co
+      SUPABASE_KEY: "sb_publishable_RWgM9cUhuWATL2corxgsEw_KRthhlq5",     // anon public 키 또는 Publishable 키
+      PEOPLE: ["승은", "연경"],                       // 두 사람 이름 (예: ["지민", "수아"])
+    };
 
-/* =========================================================
- * 2) 카테고리 + 처음 넣어 둘 기본 후보
- *    후보는 화면에서 추가·수정·삭제해요. (DB의 places 테이블에 저장)
- *    아래 SEED_PLACES는 로컬 모드의 초기값이고,
- *    Supabase에는 supabase-setup.sql이 같은 내용을 넣어 줘요.
- * ========================================================= */
-const CATEGORIES = [
-  { id: "sight", label: "🏛 명소",      color: "#ffe3d6", e: "📍" },
-  { id: "night", label: "🌃 야경",      color: "#dcdcff", e: "✨" },
-  { id: "food",  label: "🥟 먹거리",    color: "#fff0c2", e: "🍜" },
-  { id: "shop",  label: "☕ 카페·쇼핑", color: "#dff3e4", e: "🛍" },
-  { id: "trip",  label: "🚄 근교·테마", color: "#d8eefc", e: "🚄" },
-];
+    /* =========================================================
+     * 2) 카테고리 + 처음 넣어 둘 기본 후보
+     *    후보는 화면에서 추가·수정·삭제해요. (DB의 places 테이블에 저장)
+     *    아래 SEED_PLACES는 로컬 모드의 초기값이고,
+     *    Supabase에는 supabase-setup.sql이 같은 내용을 넣어 줘요.
+     * ========================================================= */
+    const CATEGORIES = [
+      {id: "sight", label: "🏛 명소", color: "#ffe3d6", e: "📍"},
+      {id: "night", label: "🌃 야경", color: "#dcdcff", e: "✨"},
+      {id: "food", label: "🥟 먹거리", color: "#fff0c2", e: "🍜"},
+      {id: "shop", label: "☕ 카페·쇼핑", color: "#dff3e4", e: "🛍"},
+      {id: "trip", label: "🚄 근교·테마", color: "#d8eefc", e: "🚄"},
+    ];
 
-const SEED_PLACES = [
-  // 명소
-  { id: "bund",        cat: "sight", e: "🏦", name: "와이탄",                zh: "外滩",       area: "황푸",   time: "1~2시간", desc: "황푸강변을 따라 유럽풍 근대 건물이 늘어선 상하이 대표 산책로. 낮에도 좋고 밤엔 필수." },
-  { id: "yuyuan",      cat: "sight", e: "🏯", name: "예원 & 성황묘",          zh: "豫园",       area: "황푸",   time: "2~3시간", desc: "명나라 시대 정원과 전통 상점가. 처마 지붕 거리 구경, 군것질하기 좋아요." },
-  { id: "pearl",       cat: "sight", e: "🗼", name: "동방명주",               zh: "东方明珠",   area: "루자쭈이", time: "1~2시간", desc: "상하이 스카이라인의 상징인 방송탑. 유리 바닥 전망대가 유명해요." },
-  { id: "tower",       cat: "sight", e: "🏙", name: "상하이타워 전망대",      zh: "上海中心",   area: "루자쭈이", time: "1~2시간", desc: "중국에서 가장 높은 빌딩. 초고속 엘리베이터로 올라가 도시 전체를 내려다봐요." },
-  { id: "xintiandi",   cat: "sight", e: "🧱", name: "신천지",                 zh: "新天地",     area: "황푸",   time: "1~2시간", desc: "스쿠먼(石库门) 전통 가옥을 개조한 카페·레스토랑 거리. 분위기 좋은 저녁 코스." },
-  { id: "kpgov",       cat: "sight", e: "🇰🇷", name: "대한민국 임시정부 청사", zh: "大韩民国临时政府旧址", area: "황푸", time: "1시간", desc: "신천지 근처에 있어 함께 묶기 좋아요. 한국인이라면 한 번쯤 들러볼 만한 곳." },
-  { id: "tianzifang",  cat: "sight", e: "🏮", name: "티엔즈팡",               zh: "田子坊",     area: "황푸",   time: "1~2시간", desc: "좁은 골목에 공방, 소품숍, 카페가 미로처럼 이어진 동네. 구경하는 재미가 있어요." },
-  { id: "wukang",      cat: "sight", e: "🌳", name: "우캉루 & 우캉맨션",       zh: "武康路",     area: "쉬후이", time: "1~2시간", desc: "플라타너스 가로수와 옛 프랑스 조계지 건물. 사진 찍기 좋은 산책 코스." },
-  { id: "jingan",      cat: "sight", e: "🛕", name: "징안사",                 zh: "静安寺",     area: "징안",   time: "40분",   desc: "도심 빌딩 숲 한가운데 있는 황금빛 사찰. 쇼핑 동선 중간에 들르기 좋아요." },
-  { id: "museum",      cat: "sight", e: "🏺", name: "상하이 박물관",           zh: "上海博物馆", area: "인민광장", time: "2시간", desc: "청동기, 도자기, 서화 컬렉션이 훌륭한 박물관. 비 오는 날 일정으로도 좋아요." },
-  { id: "lujun",       cat: "sight", e: "🕊", name: "루쉰공원 (매헌 윤봉길 기념관)", zh: "鲁迅公园", area: "홍커우", time: "1시간", desc: "윤봉길 의사 의거 현장. 현지인들의 공원 일상도 볼 수 있어요." },
+    const SEED_PLACES = [
+      // 명소
+      {id: "bund", cat: "sight", e: "🏦", name: "와이탄", zh: "外滩", area: "황푸", time: "1~2시간", desc: "황푸강변을 따라 유럽풍 근대 건물이 늘어선 상하이 대표 산책로. 낮에도 좋고 밤엔 필수."},
+      {id: "yuyuan", cat: "sight", e: "🏯", name: "예원 & 성황묘", zh: "豫园", area: "황푸", time: "2~3시간", desc: "명나라 시대 정원과 전통 상점가. 처마 지붕 거리 구경, 군것질하기 좋아요."},
+      {id: "pearl", cat: "sight", e: "🗼", name: "동방명주", zh: "东方明珠", area: "루자쭈이", time: "1~2시간", desc: "상하이 스카이라인의 상징인 방송탑. 유리 바닥 전망대가 유명해요."},
+      {id: "tower", cat: "sight", e: "🏙", name: "상하이타워 전망대", zh: "上海中心", area: "루자쭈이", time: "1~2시간", desc: "중국에서 가장 높은 빌딩. 초고속 엘리베이터로 올라가 도시 전체를 내려다봐요."},
+      {id: "xintiandi", cat: "sight", e: "🧱", name: "신천지", zh: "新天地", area: "황푸", time: "1~2시간", desc: "스쿠먼(石库门) 전통 가옥을 개조한 카페·레스토랑 거리. 분위기 좋은 저녁 코스."},
+      {id: "kpgov", cat: "sight", e: "🇰🇷", name: "대한민국 임시정부 청사", zh: "大韩民国临时政府旧址", area: "황푸", time: "1시간", desc: "신천지 근처에 있어 함께 묶기 좋아요. 한국인이라면 한 번쯤 들러볼 만한 곳."},
+      {id: "tianzifang", cat: "sight", e: "🏮", name: "티엔즈팡", zh: "田子坊", area: "황푸", time: "1~2시간", desc: "좁은 골목에 공방, 소품숍, 카페가 미로처럼 이어진 동네. 구경하는 재미가 있어요."},
+      {id: "wukang", cat: "sight", e: "🌳", name: "우캉루 & 우캉맨션", zh: "武康路", area: "쉬후이", time: "1~2시간", desc: "플라타너스 가로수와 옛 프랑스 조계지 건물. 사진 찍기 좋은 산책 코스."},
+      {id: "jingan", cat: "sight", e: "🛕", name: "징안사", zh: "静安寺", area: "징안", time: "40분", desc: "도심 빌딩 숲 한가운데 있는 황금빛 사찰. 쇼핑 동선 중간에 들르기 좋아요."},
+      {id: "museum", cat: "sight", e: "🏺", name: "상하이 박물관", zh: "上海博物馆", area: "인민광장", time: "2시간", desc: "청동기, 도자기, 서화 컬렉션이 훌륭한 박물관. 비 오는 날 일정으로도 좋아요."},
+      {id: "lujun", cat: "sight", e: "🕊", name: "루쉰공원 (매헌 윤봉길 기념관)", zh: "鲁迅公园", area: "홍커우", time: "1시간", desc: "윤봉길 의사 의거 현장. 현지인들의 공원 일상도 볼 수 있어요."},
 
-  // 야경
-  { id: "bundnight",   cat: "night", e: "✨", name: "와이탄 야경",            zh: "外滩夜景",   area: "황푸",   time: "1시간",   desc: "강 건너 루자쭈이 빌딩 숲에 불이 켜지는 순간이 하이라이트. 조명 시간에 맞춰 가요." },
-  { id: "cruise",      cat: "night", e: "🛳", name: "황푸강 유람선",           zh: "黄浦江游览", area: "와이탄", time: "40분~1시간", desc: "배 위에서 양쪽 야경을 한 번에. 짧은 일정이면 페리로 강만 건너도 분위기 나요." },
-  { id: "northbund",   cat: "night", e: "🌉", name: "북와이탄 산책",           zh: "北外滩",     area: "홍커우", time: "1시간",   desc: "와이탄보다 한산하게 루자쭈이 야경을 볼 수 있는 강변 산책로." },
-  { id: "rooftop",     cat: "night", e: "🍸", name: "와이탄 루프탑 바",        zh: "屋顶酒吧",   area: "황푸",   time: "1~2시간", desc: "와이탄 건물 꼭대기 바에서 야경 보며 한잔. 자리 경쟁이 있으니 예약 추천." },
+      // 야경
+      {id: "bundnight", cat: "night", e: "✨", name: "와이탄 야경", zh: "外滩夜景", area: "황푸", time: "1시간", desc: "강 건너 루자쭈이 빌딩 숲에 불이 켜지는 순간이 하이라이트. 조명 시간에 맞춰 가요."},
+      {id: "cruise", cat: "night", e: "🛳", name: "황푸강 유람선", zh: "黄浦江游览", area: "와이탄", time: "40분~1시간", desc: "배 위에서 양쪽 야경을 한 번에. 짧은 일정이면 페리로 강만 건너도 분위기 나요."},
+      {id: "northbund", cat: "night", e: "🌉", name: "북와이탄 산책", zh: "北外滩", area: "홍커우", time: "1시간", desc: "와이탄보다 한산하게 루자쭈이 야경을 볼 수 있는 강변 산책로."},
+      {id: "rooftop", cat: "night", e: "🍸", name: "와이탄 루프탑 바", zh: "屋顶酒吧", area: "황푸", time: "1~2시간", desc: "와이탄 건물 꼭대기 바에서 야경 보며 한잔. 자리 경쟁이 있으니 예약 추천."},
 
-  // 먹거리
-  { id: "xlb",         cat: "food",  e: "🥟", name: "샤오롱바오",             zh: "小笼包",     area: "곳곳",   time: "1시간",   desc: "육즙 가득한 상하이 대표 만두. 예원의 난샹만두점이 가장 유명해요." },
-  { id: "shengjian",   cat: "food",  e: "🍳", name: "셩지엔바오",             zh: "生煎包",     area: "곳곳",   time: "30분",    desc: "바닥을 바삭하게 구운 군만두. 샤오양셩지엔 같은 체인점에서 쉽게 먹어요." },
-  { id: "crab",        cat: "food",  e: "🦀", name: "털게 (따자셰)",          zh: "大闸蟹",     area: "곳곳",   time: "1~2시간", desc: "가을·초겨울 제철 별미. 게살 국수나 게알 요리로도 즐길 수 있어요." },
-  { id: "hongshao",    cat: "food",  e: "🍖", name: "상하이 가정식 (홍샤오러우)", zh: "本帮菜",  area: "곳곳",   time: "1~2시간", desc: "달큰한 간장 양념 돼지고기 조림 등 상하이 본방요리 코스." },
-  { id: "hotpot",      cat: "food",  e: "🍲", name: "훠궈",                   zh: "火锅",       area: "곳곳",   time: "1~2시간", desc: "하이디라오 같은 훠궈 맛집. 밤늦게까지 하는 곳이 많아 마지막 일정으로 좋아요." },
-  { id: "breakfast",   cat: "food",  e: "🥢", name: "현지 아침 (총유빙·또우장)", zh: "早餐",     area: "곳곳",   time: "30분",    desc: "파기름 전병, 두유, 유타오로 먹는 현지식 아침. 골목 가게에서 저렴하게." },
+      // 먹거리
+      {id: "xlb", cat: "food", e: "🥟", name: "샤오롱바오", zh: "小笼包", area: "곳곳", time: "1시간", desc: "육즙 가득한 상하이 대표 만두. 예원의 난샹만두점이 가장 유명해요."},
+      {id: "shengjian", cat: "food", e: "🍳", name: "셩지엔바오", zh: "生煎包", area: "곳곳", time: "30분", desc: "바닥을 바삭하게 구운 군만두. 샤오양셩지엔 같은 체인점에서 쉽게 먹어요."},
+      {id: "crab", cat: "food", e: "🦀", name: "털게 (따자셰)", zh: "大闸蟹", area: "곳곳", time: "1~2시간", desc: "가을·초겨울 제철 별미. 게살 국수나 게알 요리로도 즐길 수 있어요."},
+      {id: "hongshao", cat: "food", e: "🍖", name: "상하이 가정식 (홍샤오러우)", zh: "本帮菜", area: "곳곳", time: "1~2시간", desc: "달큰한 간장 양념 돼지고기 조림 등 상하이 본방요리 코스."},
+      {id: "hotpot", cat: "food", e: "🍲", name: "훠궈", zh: "火锅", area: "곳곳", time: "1~2시간", desc: "하이디라오 같은 훠궈 맛집. 밤늦게까지 하는 곳이 많아 마지막 일정으로 좋아요."},
+      {id: "breakfast", cat: "food", e: "🥢", name: "현지 아침 (총유빙·또우장)", zh: "早餐", area: "곳곳", time: "30분", desc: "파기름 전병, 두유, 유타오로 먹는 현지식 아침. 골목 가게에서 저렴하게."},
 
-  // 카페·쇼핑
-  { id: "roastery",    cat: "shop",  e: "☕", name: "스타벅스 리저브 로스터리", zh: "星巴克臻选烘焙工坊", area: "징안", time: "1시간", desc: "세계 최대급 스타벅스 매장. 로스팅 설비 구경만으로도 볼거리예요." },
-  { id: "nanjingrd",   cat: "shop",  e: "🛍", name: "난징동루 보행가",         zh: "南京东路",   area: "황푸",   time: "1~2시간", desc: "와이탄으로 이어지는 쇼핑 거리. 밤에 네온사인이 켜지면 더 화려해요." },
-  { id: "anfu",        cat: "shop",  e: "🧁", name: "안푸루",                 zh: "安福路",     area: "쉬후이", time: "1~2시간", desc: "감각적인 카페와 편집숍이 모인 요즘 핫한 거리. 우캉루와 걸어서 묶기 좋아요." },
-  { id: "ifc",         cat: "shop",  e: "🏬", name: "IFC몰 / 루자쭈이 쇼핑",  zh: "国金中心",   area: "루자쭈이", time: "1~2시간", desc: "대형 쇼핑몰. 전망대 일정과 묶어 식사·쇼핑까지 한 번에." },
+      // 카페·쇼핑
+      {id: "roastery", cat: "shop", e: "☕", name: "스타벅스 리저브 로스터리", zh: "星巴克臻选烘焙工坊", area: "징안", time: "1시간", desc: "세계 최대급 스타벅스 매장. 로스팅 설비 구경만으로도 볼거리예요."},
+      {id: "nanjingrd", cat: "shop", e: "🛍", name: "난징동루 보행가", zh: "南京东路", area: "황푸", time: "1~2시간", desc: "와이탄으로 이어지는 쇼핑 거리. 밤에 네온사인이 켜지면 더 화려해요."},
+      {id: "anfu", cat: "shop", e: "🧁", name: "안푸루", zh: "安福路", area: "쉬후이", time: "1~2시간", desc: "감각적인 카페와 편집숍이 모인 요즘 핫한 거리. 우캉루와 걸어서 묶기 좋아요."},
+      {id: "ifc", cat: "shop", e: "🏬", name: "IFC몰 / 루자쭈이 쇼핑", zh: "国金中心", area: "루자쭈이", time: "1~2시간", desc: "대형 쇼핑몰. 전망대 일정과 묶어 식사·쇼핑까지 한 번에."},
 
-  // 근교·테마
-  { id: "zhujiajiao",  cat: "trip",  e: "🛶", name: "주가각 수향마을",         zh: "朱家角",     area: "칭푸",   time: "반나절",  desc: "운하와 돌다리가 있는 물의 마을. 지하철로 갈 수 있어 근교 중 접근성이 좋아요." },
-  { id: "suzhou",      cat: "trip",  e: "🌸", name: "쑤저우 당일치기",         zh: "苏州",       area: "근교",   time: "하루",    desc: "고속철로 금방 가는 정원의 도시. 졸정원과 핑장루 운하 거리가 유명해요." },
-  { id: "wuzhen",      cat: "trip",  e: "🏮", name: "우전 수향마을",           zh: "乌镇",       area: "근교",   time: "하루",    desc: "밤 조명이 아름다운 대규모 수향마을. 시간 여유가 있으면 1박도 좋아요." },
-  { id: "disney",      cat: "trip",  e: "🏰", name: "상하이 디즈니랜드",       zh: "上海迪士尼", area: "푸둥",   time: "하루",    desc: "하루를 통째로 쓰는 테마파크. 놀이기구 좋아하면 고려해 볼 만해요." },
-];
+      // 근교·테마
+      {id: "zhujiajiao", cat: "trip", e: "🛶", name: "주가각 수향마을", zh: "朱家角", area: "칭푸", time: "반나절", desc: "운하와 돌다리가 있는 물의 마을. 지하철로 갈 수 있어 근교 중 접근성이 좋아요."},
+      {id: "suzhou", cat: "trip", e: "🌸", name: "쑤저우 당일치기", zh: "苏州", area: "근교", time: "하루", desc: "고속철로 금방 가는 정원의 도시. 졸정원과 핑장루 운하 거리가 유명해요."},
+      {id: "wuzhen", cat: "trip", e: "🏮", name: "우전 수향마을", zh: "乌镇", area: "근교", time: "하루", desc: "밤 조명이 아름다운 대규모 수향마을. 시간 여유가 있으면 1박도 좋아요."},
+      {id: "disney", cat: "trip", e: "🏰", name: "상하이 디즈니랜드", zh: "上海迪士尼", area: "푸둥", time: "하루", desc: "하루를 통째로 쓰는 테마파크. 놀이기구 좋아하면 고려해 볼 만해요."},
+    ];
 
-/* =========================================================
- * 3) 아래부터는 동작 코드 (수정하지 않아도 돼요)
- * ========================================================= */
-const CHOICES = [
-  { v: "must", label: "💖 꼭!",   short: "💖 꼭" },
-  { v: "ok",   label: "🙂 괜찮아", short: "🙂 괜찮아" },
-  { v: "pass", label: "🙅 패스",   short: "🙅 패스" },
-];
-const CHOICE_MAP = Object.fromEntries(CHOICES.map(c => [c.v, c]));
-const CAT_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+    /* =========================================================
+     * 3) 아래부터는 동작 코드 (수정하지 않아도 돼요)
+     * ========================================================= */
+    const CHOICES = [
+      {v: "must", label: "💖 꼭!", short: "💖 꼭"},
+      {v: "ok", label: "🙂 괜찮아", short: "🙂 괜찮아"},
+      {v: "pass", label: "🙅 패스", short: "🙅 패스"},
+    ];
+    const CHOICE_MAP = Object.fromEntries(CHOICES.map(c => [c.v, c]));
+    const CAT_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 
-const isLocal = !CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes("YOUR_") ||
-                !CONFIG.SUPABASE_KEY || CONFIG.SUPABASE_KEY.includes("YOUR_");
-const LS_ME = "sh-picks-me";
-const LS_LOCAL = "sh-picks-local";
-const LS_LOCAL_PLACES = "sh-picks-local-places";
-const LS_LOCAL_PHOTOS = "sh-picks-local-photos";
-const PHOTO_BUCKET = "place-photos";
+    const isLocal = !CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes("YOUR_") ||
+      !CONFIG.SUPABASE_KEY || CONFIG.SUPABASE_KEY.includes("YOUR_");
+    const LS_ME = "sh-picks-me";
+    const LS_LOCAL = "sh-picks-local";
+    const LS_LOCAL_PLACES = "sh-picks-local-places";
+    const LS_LOCAL_PHOTOS = "sh-picks-local-photos";
+    const PHOTO_BUCKET = "place-photos";
 
-// 장소별 사진 { placeId: { url, path } }
-let photos = {};
+    // 장소별 사진 { placeId: { url, path } }
+    let photos = {};
 
-const LS_LOCAL_SEEDED = "sh-picks-local-seeded";
-const SEED_AUTHOR = "기본";
+    const LS_LOCAL_SEEDED = "sh-picks-local-seeded";
+    const SEED_AUTHOR = "기본";
 
-// 모든 후보 (DB 행 형태 그대로 보관)
-let placeRows = [];
-function seedRows() {
-  return SEED_PLACES.map((p, i) => ({
-    id: p.id, cat: p.cat, name: p.name, zh: p.zh || null, area: p.area || null,
-    duration: p.time || null, description: p.desc || null, emoji: p.e || null,
-    added_by: SEED_AUTHOR, created_at: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
-  }));
-}
-function rowToPlace(r) {
-  return {
-    id: r.id, cat: CAT_MAP[r.cat] ? r.cat : "sight",
-    e: r.emoji || CAT_MAP[r.cat]?.e || "📍",
-    name: r.name, zh: r.zh || "", area: r.area || "미정", time: r.duration || "미정",
-    desc: r.description || "", addedBy: r.added_by,
-    custom: !!r.added_by && r.added_by !== SEED_AUTHOR,
-  };
-}
-function allPlaces() {
-  return [...placeRows]
-    .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
-    .map(rowToPlace);
-}
-function findRow(id) { return placeRows.find(r => r.id === id); }
-function upsertRow(row) {
-  const i = placeRows.findIndex(r => r.id === row.id);
-  if (i >= 0) placeRows[i] = { ...placeRows[i], ...row }; else placeRows.push(row);
-}
-function removeRow(id) {
-  placeRows = placeRows.filter(r => r.id !== id);
-  Object.values(state.picks).forEach(m => delete m[id]);
-}
-function saveLocalPlaces() { safeSet(LS_LOCAL_PLACES, JSON.stringify(placeRows)); }
-
-// Supabase 오류를 이해하기 쉬운 문장으로
-function errMsg(error, what) {
-  const m = `${error?.code || ""} ${error?.message || ""}`;
-  if (/42501|permission denied|row-level security/i.test(m))
-    return `${what}: 권한이 없어요. supabase-setup.sql을 다시 실행해 주세요`;
-  if (/42P01|PGRST205|does not exist|Could not find the table/i.test(m))
-    return `${what}: 테이블이 없어요. supabase-setup.sql을 실행해 주세요`;
-  if (/Failed to fetch|NetworkError/i.test(m))
-    return `${what}: 인터넷 연결을 확인해 주세요`;
-  return `${what}: ${error?.message || "알 수 없는 오류"}`;
-}
-function newId() {
-  const rand = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
-  return "c_" + rand.replace(/-/g, "").slice(0, 12);
-}
-
-const state = {
-  me: null,
-  tab: "all",
-  onlyEmpty: false,
-  picks: {},                 // { person: { placeId: choice } }
-};
-CONFIG.PEOPLE.forEach(p => state.picks[p] = {});
-
-let sb = null;
-let loadError = null;
-
-/* ---------- storage helpers ---------- */
-function safeGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
-function safeSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
-
-function applyRow(row) {
-  if (!state.picks[row.person]) state.picks[row.person] = {};
-  if (row.choice) state.picks[row.person][row.place_id] = row.choice;
-  else delete state.picks[row.person][row.place_id];
-}
-
-async function loadAll() {
-  if (isLocal) {
-    try { Object.assign(state.picks, JSON.parse(safeGet(LS_LOCAL) || "{}")); } catch {}
-    try { placeRows = JSON.parse(safeGet(LS_LOCAL_PLACES) || "[]"); } catch {}
-    if (!safeGet(LS_LOCAL_SEEDED)) {                      // 처음 한 번만 기본 후보를 채워 넣어요
-      seedRows().forEach(r => { if (!findRow(r.id)) placeRows.push(r); });
-      saveLocalPlaces(); safeSet(LS_LOCAL_SEEDED, "1");
+    // 모든 후보 (DB 행 형태 그대로 보관)
+    let placeRows = [];
+    function seedRows() {
+      return SEED_PLACES.map((p, i) => ({
+        id: p.id, cat: p.cat, name: p.name, zh: p.zh || null, area: p.area || null,
+        duration: p.time || null, description: p.desc || null, emoji: p.e || null,
+        added_by: SEED_AUTHOR, created_at: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
+      }));
     }
-    try { photos = JSON.parse(safeGet(LS_LOCAL_PHOTOS) || "{}"); } catch {}
-    CONFIG.PEOPLE.forEach(p => state.picks[p] = state.picks[p] || {});
-    setStatus(false, "로컬 모드 · 이 기기에만 저장돼요");
-    return;
-  }
-  sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-  const [picksRes, placesRes, photosRes] = await Promise.all([
-    sb.from("picks").select("person, place_id, choice"),
-    sb.from("places").select("*").order("created_at"),
-    sb.from("place_photos").select("place_id, url, path"),
-  ]);
-  if (photosRes.error) console.error(photosRes.error);
-  else photosRes.data.forEach(r => photos[r.place_id] = { url: r.url, path: r.path });
-  const firstErr = placesRes.error || picksRes.error;
-  if (firstErr) {
-    console.error(placesRes.error, picksRes.error);
-    loadError = errMsg(firstErr, "불러오기 실패");
-    setStatus(false, "불러오기 실패");
-    return;
-  }
-  placeRows = placesRes.data;
-  picksRes.data.forEach(applyRow);
+    function rowToPlace(r) {
+      return {
+        id: r.id, cat: CAT_MAP[r.cat] ? r.cat : "sight",
+        e: r.emoji || CAT_MAP[r.cat]?.e || "📍",
+        name: r.name, zh: r.zh || "", area: r.area || "미정", time: r.duration || "미정",
+        desc: r.description || "", addedBy: r.added_by,
+        custom: !!r.added_by && r.added_by !== SEED_AUTHOR,
+      };
+    }
+    function allPlaces() {
+      return [...placeRows]
+        .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
+        .map(rowToPlace);
+    }
+    function findRow(id) {return placeRows.find(r => r.id === id);}
+    function upsertRow(row) {
+      const i = placeRows.findIndex(r => r.id === row.id);
+      if (i >= 0) placeRows[i] = {...placeRows[i], ...row}; else placeRows.push(row);
+    }
+    function removeRow(id) {
+      placeRows = placeRows.filter(r => r.id !== id);
+      Object.values(state.picks).forEach(m => delete m[id]);
+    }
+    function saveLocalPlaces() {safeSet(LS_LOCAL_PLACES, JSON.stringify(placeRows));}
 
-  sb.channel("picks-live")
-    .on("postgres_changes", { event: "*", schema: "public", table: "picks" }, payload => {
-      if (payload.eventType === "DELETE") {
-        const o = payload.old || {};
-        if (o.person && o.place_id) applyRow({ person: o.person, place_id: o.place_id, choice: null });
-      } else {
-        applyRow(payload.new);
+    // Supabase 오류를 이해하기 쉬운 문장으로
+    function errMsg(error, what) {
+      const m = `${error?.code || ""} ${error?.message || ""}`;
+      if (/42501|permission denied|row-level security/i.test(m))
+        return `${what}: 권한이 없어요. supabase-setup.sql을 다시 실행해 주세요`;
+      if (/42P01|PGRST205|does not exist|Could not find the table/i.test(m))
+        return `${what}: 테이블이 없어요. supabase-setup.sql을 실행해 주세요`;
+      if (/Failed to fetch|NetworkError/i.test(m))
+        return `${what}: 인터넷 연결을 확인해 주세요`;
+      return `${what}: ${error?.message || "알 수 없는 오류"}`;
+    }
+    function newId() {
+      const rand = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
+      return "c_" + rand.replace(/-/g, "").slice(0, 12);
+    }
+
+    const state = {
+      me: null,
+      tab: "all",
+      onlyEmpty: false,
+      picks: {},                 // { person: { placeId: choice } }
+    };
+    CONFIG.PEOPLE.forEach(p => state.picks[p] = {});
+
+    let sb = null;
+    let loadError = null;
+
+    /* ---------- storage helpers ---------- */
+    function safeGet(k) {try {return localStorage.getItem(k);} catch {return null;} }
+    function safeSet(k, v) {try {localStorage.setItem(k, v);} catch { } }
+
+    function applyRow(row) {
+      if (!state.picks[row.person]) state.picks[row.person] = {};
+      if (row.choice) state.picks[row.person][row.place_id] = row.choice;
+      else delete state.picks[row.person][row.place_id];
+    }
+
+    async function loadAll() {
+      if (isLocal) {
+        try {Object.assign(state.picks, JSON.parse(safeGet(LS_LOCAL) || "{}"));} catch { }
+        try {placeRows = JSON.parse(safeGet(LS_LOCAL_PLACES) || "[]");} catch { }
+        if (!safeGet(LS_LOCAL_SEEDED)) {                      // 처음 한 번만 기본 후보를 채워 넣어요
+          seedRows().forEach(r => {if (!findRow(r.id)) placeRows.push(r);});
+          saveLocalPlaces(); safeSet(LS_LOCAL_SEEDED, "1");
+        }
+        try {photos = JSON.parse(safeGet(LS_LOCAL_PHOTOS) || "{}");} catch { }
+        CONFIG.PEOPLE.forEach(p => state.picks[p] = state.picks[p] || {});
+        setStatus(false, "로컬 모드 · 이 기기에만 저장돼요");
+        return;
       }
+      sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+      const [picksRes, placesRes, photosRes] = await Promise.all([
+        sb.from("picks").select("person, place_id, choice"),
+        sb.from("places").select("*").order("created_at"),
+        sb.from("place_photos").select("place_id, url, path"),
+      ]);
+      if (photosRes.error) console.error(photosRes.error);
+      else photosRes.data.forEach(r => photos[r.place_id] = {url: r.url, path: r.path});
+      const firstErr = placesRes.error || picksRes.error;
+      if (firstErr) {
+        console.error(placesRes.error, picksRes.error);
+        loadError = errMsg(firstErr, "불러오기 실패");
+        setStatus(false, "불러오기 실패");
+        return;
+      }
+      placeRows = placesRes.data;
+      picksRes.data.forEach(applyRow);
+
+      sb.channel("picks-live")
+        .on("postgres_changes", {event: "*", schema: "public", table: "picks"}, payload => {
+          if (payload.eventType === "DELETE") {
+            const o = payload.old || {};
+            if (o.person && o.place_id) applyRow({person: o.person, place_id: o.place_id, choice: null});
+          } else {
+            applyRow(payload.new);
+          }
+          render();
+        })
+        .on("postgres_changes", {event: "*", schema: "public", table: "places"}, payload => {
+          if (payload.eventType === "DELETE") {if (payload.old?.id) removeRow(payload.old.id);}
+          else upsertRow(payload.new);
+          render();
+        })
+        .on("postgres_changes", {event: "*", schema: "public", table: "place_photos"}, payload => {
+          if (payload.eventType === "DELETE") {if (payload.old?.place_id) delete photos[payload.old.place_id];}
+          else photos[payload.new.place_id] = {url: payload.new.url, path: payload.new.path};
+          render();
+        })
+        .subscribe(status => {
+          if (status === "SUBSCRIBED") setStatus(true, "실시간 동기화 중");
+          else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setStatus(false, "실시간 연결 끊김 · 새로고침해 주세요");
+        });
+      setStatus(false, "저장됨 · 실시간 연결 중…");
+    }
+
+    async function setPick(placeId, choice) {
+      const person = state.me;
+      const prev = state.picks[person][placeId] || null;
+      const next = prev === choice ? null : choice;      // 같은 버튼 다시 누르면 해제
+      applyRow({person, place_id: placeId, choice: next});
       render();
-    })
-    .on("postgres_changes", { event: "*", schema: "public", table: "places" }, payload => {
-      if (payload.eventType === "DELETE") { if (payload.old?.id) removeRow(payload.old.id); }
-      else upsertRow(payload.new);
+
+      if (isLocal) {safeSet(LS_LOCAL, JSON.stringify(state.picks)); return;}
+
+      let res;
+      if (next === null) {
+        res = await sb.from("picks").delete().match({person, place_id: placeId});
+      } else {
+        res = await sb.from("picks").upsert(
+          {person, place_id: placeId, choice: next, updated_at: new Date().toISOString()},
+          {onConflict: "person,place_id"}
+        );
+      }
+      if (res.error) {
+        console.error(res.error);
+        applyRow({person, place_id: placeId, choice: prev});
+        render();
+        toast(errMsg(res.error, "저장 실패"));
+      }
+    }
+
+    /* ---------- 후보 CRUD ---------- */
+    async function createPlace(row) {
+      upsertRow(row);
       render();
-    })
-    .on("postgres_changes", { event: "*", schema: "public", table: "place_photos" }, payload => {
-      if (payload.eventType === "DELETE") { if (payload.old?.place_id) delete photos[payload.old.place_id]; }
-      else photos[payload.new.place_id] = { url: payload.new.url, path: payload.new.path };
+      if (isLocal) {saveLocalPlaces(); return true;}
+      const {error} = await sb.from("places").insert(row);
+      if (error) {
+        console.error(error);
+        removeRow(row.id); render();
+        toast(errMsg(error, "추가 실패"));
+        return false;
+      }
+      return true;
+    }
+
+    async function updatePlace(id, fields) {
+      const before = {...findRow(id)};
+      upsertRow({id, ...fields});
       render();
-    })
-    .subscribe(status => {
-      if (status === "SUBSCRIBED") setStatus(true, "실시간 동기화 중");
-      else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setStatus(false, "실시간 연결 끊김 · 새로고침해 주세요");
-    });
-  setStatus(false, "저장됨 · 실시간 연결 중…");
-}
+      if (isLocal) {saveLocalPlaces(); return true;}
+      const {data, error} = await sb.from("places").update(fields).eq("id", id).select("id");
+      if (error || !data?.length) {
+        console.error(error);
+        upsertRow(before); render();
+        toast(error ? errMsg(error, "수정 실패") : "수정 실패: 이미 삭제된 후보예요");
+        return false;
+      }
+      return true;
+    }
 
-async function setPick(placeId, choice) {
-  const person = state.me;
-  const prev = state.picks[person][placeId] || null;
-  const next = prev === choice ? null : choice;      // 같은 버튼 다시 누르면 해제
-  applyRow({ person, place_id: placeId, choice: next });
-  render();
+    async function deletePlace(id) {
+      const row = findRow(id);
+      if (!row) return false;
+      if (photos[id]) await removePhoto(id, true);
+      const backupPicks = CONFIG.PEOPLE.map(p => [p, state.picks[p][id]]);
+      removeRow(id);
+      render();
+      if (isLocal) {
+        saveLocalPlaces();
+        safeSet(LS_LOCAL, JSON.stringify(state.picks));
+        toast("삭제했어요");
+        return true;
+      }
+      const r1 = await sb.from("picks").delete().eq("place_id", id);
+      const r2 = await sb.from("places").delete().eq("id", id);
+      if (r1.error || r2.error) {
+        console.error(r1.error || r2.error);
+        upsertRow(row);
+        backupPicks.forEach(([p, c]) => c && applyRow({person: p, place_id: id, choice: c}));
+        render();
+        toast(errMsg(r1.error || r2.error, "삭제 실패"));
+        return false;
+      }
+      toast("삭제했어요");
+      return true;
+    }
 
-  if (isLocal) { safeSet(LS_LOCAL, JSON.stringify(state.picks)); return; }
+    /* ---------- 사진 ---------- */
+    // 사진을 긴 변 기준으로 줄이고 JPEG로 압축 (용량 절약)
+    async function compressImage(file, maxSide, quality) {
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await new Promise((resolve, reject) => {
+          const i = new Image();
+          i.onload = () => resolve(i);
+          i.onerror = () => reject(new Error("이미지를 읽을 수 없어요"));
+          i.src = url;
+        });
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.naturalWidth * scale);
+        canvas.height = Math.round(img.naturalHeight * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        return await new Promise(res => canvas.toBlob(res, "image/jpeg", quality));
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+    function blobToDataURL(blob) {
+      return new Promise(res => {const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob);});
+    }
 
-  let res;
-  if (next === null) {
-    res = await sb.from("picks").delete().match({ person, place_id: placeId });
-  } else {
-    res = await sb.from("picks").upsert(
-      { person, place_id: placeId, choice: next, updated_at: new Date().toISOString() },
-      { onConflict: "person,place_id" }
-    );
-  }
-  if (res.error) {
-    console.error(res.error);
-    applyRow({ person, place_id: placeId, choice: prev });
-    render();
-    toast(errMsg(res.error, "저장 실패"));
-  }
-}
+    async function setPhoto(placeId, file) {
+      toast("사진 올리는 중…");
+      let blob;
+      try {blob = await compressImage(file, isLocal ? 800 : 1280, isLocal ? 0.7 : 0.8);}
+      catch {toast("이 사진 형식은 열 수 없어요. JPG나 PNG로 시도해 주세요"); return false;}
 
-/* ---------- 후보 CRUD ---------- */
-async function createPlace(row) {
-  upsertRow(row);
-  render();
-  if (isLocal) { saveLocalPlaces(); return true; }
-  const { error } = await sb.from("places").insert(row);
-  if (error) {
-    console.error(error);
-    removeRow(row.id); render();
-    toast(errMsg(error, "추가 실패"));
-    return false;
-  }
-  return true;
-}
+      if (isLocal) {
+        photos[placeId] = {url: await blobToDataURL(blob), path: null};
+        try {localStorage.setItem(LS_LOCAL_PHOTOS, JSON.stringify(photos));}
+        catch {delete photos[placeId]; toast("로컬 저장 공간이 부족해요"); render(); return false;}
+        render(); toast("사진을 넣었어요"); return true;
+      }
 
-async function updatePlace(id, fields) {
-  const before = { ...findRow(id) };
-  upsertRow({ id, ...fields });
-  render();
-  if (isLocal) { saveLocalPlaces(); return true; }
-  const { data, error } = await sb.from("places").update(fields).eq("id", id).select("id");
-  if (error || !data?.length) {
-    console.error(error);
-    upsertRow(before); render();
-    toast(error ? errMsg(error, "수정 실패") : "수정 실패: 이미 삭제된 후보예요");
-    return false;
-  }
-  return true;
-}
+      const old = photos[placeId];
+      const path = `${placeId}/${Date.now()}.jpg`;
+      const up = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, {contentType: "image/jpeg"});
+      if (up.error) {console.error(up.error); toast(errMsg(up.error, "사진 업로드 실패")); return false;}
+      const url = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+      const {error} = await sb.from("place_photos").upsert(
+        {place_id: placeId, url, path, added_by: state.me, updated_at: new Date().toISOString()},
+        {onConflict: "place_id"}
+      );
+      if (error) {
+        console.error(error);
+        sb.storage.from(PHOTO_BUCKET).remove([path]);
+        toast(errMsg(error, "사진 저장 실패")); return false;
+      }
+      photos[placeId] = {url, path};
+      if (old?.path) sb.storage.from(PHOTO_BUCKET).remove([old.path]);   // 예전 사진 정리
+      render(); toast("사진을 넣었어요");
+      return true;
+    }
 
-async function deletePlace(id) {
-  const row = findRow(id);
-  if (!row) return false;
-  if (photos[id]) await removePhoto(id, true);
-  const backupPicks = CONFIG.PEOPLE.map(p => [p, state.picks[p][id]]);
-  removeRow(id);
-  render();
-  if (isLocal) {
-    saveLocalPlaces();
-    safeSet(LS_LOCAL, JSON.stringify(state.picks));
-    toast("삭제했어요");
-    return true;
-  }
-  const r1 = await sb.from("picks").delete().eq("place_id", id);
-  const r2 = await sb.from("places").delete().eq("id", id);
-  if (r1.error || r2.error) {
-    console.error(r1.error || r2.error);
-    upsertRow(row);
-    backupPicks.forEach(([p, c]) => c && applyRow({ person: p, place_id: id, choice: c }));
-    render();
-    toast(errMsg(r1.error || r2.error, "삭제 실패"));
-    return false;
-  }
-  toast("삭제했어요");
-  return true;
-}
+    async function removePhoto(placeId, silent) {
+      const old = photos[placeId];
+      if (!old) return;
+      delete photos[placeId];
+      render();
+      if (isLocal) {safeSet(LS_LOCAL_PHOTOS, JSON.stringify(photos)); if (!silent) toast("사진을 지웠어요"); return;}
+      const {error} = await sb.from("place_photos").delete().eq("place_id", placeId);
+      if (error) {console.error(error); photos[placeId] = old; render(); toast(errMsg(error, "사진 삭제 실패")); return;}
+      if (old.path) sb.storage.from(PHOTO_BUCKET).remove([old.path]);
+      if (!silent) toast("사진을 지웠어요");
+    }
 
-/* ---------- 사진 ---------- */
-// 사진을 긴 변 기준으로 줄이고 JPEG로 압축 (용량 절약)
-async function compressImage(file, maxSide, quality) {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = () => reject(new Error("이미지를 읽을 수 없어요"));
-      i.src = url;
-    });
-    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(img.naturalWidth * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
-    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-    return await new Promise(res => canvas.toBlob(res, "image/jpeg", quality));
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-function blobToDataURL(blob) {
-  return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob); });
-}
+    /* ---------- UI helpers ---------- */
+    function esc(s) {return String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));}
+    function other() {return CONFIG.PEOPLE.find(p => p !== state.me);}
+    function setStatus(on, text) {
+      document.getElementById("liveDot").classList.toggle("on", on);
+      document.getElementById("statusText").textContent = text;
+    }
+    let toastTimer;
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg; t.classList.add("show");
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+    }
 
-async function setPhoto(placeId, file) {
-  toast("사진 올리는 중…");
-  let blob;
-  try { blob = await compressImage(file, isLocal ? 800 : 1280, isLocal ? 0.7 : 0.8); }
-  catch { toast("이 사진 형식은 열 수 없어요. JPG나 PNG로 시도해 주세요"); return false; }
+    function renderTabs() {
+      const tabs = [{id: "all", label: "전체"}, ...CATEGORIES, {id: "result", label: "🤝 결과 보기"}];
+      document.getElementById("tabs").innerHTML = tabs.map(t =>
+        `<button class="tab ${t.id === "result" ? "result" : ""} ${state.tab === t.id ? "active" : ""}" data-tab="${t.id}">${esc(t.label)}</button>`
+      ).join("");
+    }
 
-  if (isLocal) {
-    photos[placeId] = { url: await blobToDataURL(blob), path: null };
-    try { localStorage.setItem(LS_LOCAL_PHOTOS, JSON.stringify(photos)); }
-    catch { delete photos[placeId]; toast("로컬 저장 공간이 부족해요"); render(); return false; }
-    render(); toast("사진을 넣었어요"); return true;
-  }
-
-  const old = photos[placeId];
-  const path = `${placeId}/${Date.now()}.jpg`;
-  const up = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: "image/jpeg" });
-  if (up.error) { console.error(up.error); toast(errMsg(up.error, "사진 업로드 실패")); return false; }
-  const url = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
-  const { error } = await sb.from("place_photos").upsert(
-    { place_id: placeId, url, path, added_by: state.me, updated_at: new Date().toISOString() },
-    { onConflict: "place_id" }
-  );
-  if (error) {
-    console.error(error);
-    sb.storage.from(PHOTO_BUCKET).remove([path]);
-    toast(errMsg(error, "사진 저장 실패")); return false;
-  }
-  photos[placeId] = { url, path };
-  if (old?.path) sb.storage.from(PHOTO_BUCKET).remove([old.path]);   // 예전 사진 정리
-  render(); toast("사진을 넣었어요");
-  return true;
-}
-
-async function removePhoto(placeId, silent) {
-  const old = photos[placeId];
-  if (!old) return;
-  delete photos[placeId];
-  render();
-  if (isLocal) { safeSet(LS_LOCAL_PHOTOS, JSON.stringify(photos)); if (!silent) toast("사진을 지웠어요"); return; }
-  const { error } = await sb.from("place_photos").delete().eq("place_id", placeId);
-  if (error) { console.error(error); photos[placeId] = old; render(); toast(errMsg(error, "사진 삭제 실패")); return; }
-  if (old.path) sb.storage.from(PHOTO_BUCKET).remove([old.path]);
-  if (!silent) toast("사진을 지웠어요");
-}
-
-/* ---------- UI helpers ---------- */
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-function other() { return CONFIG.PEOPLE.find(p => p !== state.me); }
-function setStatus(on, text) {
-  document.getElementById("liveDot").classList.toggle("on", on);
-  document.getElementById("statusText").textContent = text;
-}
-let toastTimer;
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
-}
-
-function renderTabs() {
-  const tabs = [{ id: "all", label: "전체" }, ...CATEGORIES, { id: "result", label: "🤝 결과 보기" }];
-  document.getElementById("tabs").innerHTML = tabs.map(t =>
-    `<button class="tab ${t.id === "result" ? "result" : ""} ${state.tab === t.id ? "active" : ""}" data-tab="${t.id}">${esc(t.label)}</button>`
-  ).join("");
-}
-
-function cardHTML(p) {
-  const mine = state.picks[state.me]?.[p.id];
-  const theirs = state.picks[other()]?.[p.id];
-  const cat = CAT_MAP[p.cat];
-  const map = `https://www.google.com/maps/search/${encodeURIComponent((p.zh || p.name) + " 上海")}`;
-  const ph = photos[p.id];
-  const thumb = ph
-    ? `<div class="thumb has-photo" style="background-image:url(&quot;${esc(ph.url)}&quot;)"><span class="cat">${esc(cat.label)}</span></div>`
-    : `<div class="thumb" style="background:${cat.color}"><span>${p.e}</span><span class="cat">${esc(cat.label)}</span></div>`;
-  return `
+    function cardHTML(p) {
+      const mine = state.picks[state.me]?.[p.id];
+      const theirs = state.picks[other()]?.[p.id];
+      const cat = CAT_MAP[p.cat];
+      const map = `https://www.google.com/maps/search/${encodeURIComponent((p.zh || p.name) + " 上海")}`;
+      const ph = photos[p.id];
+      const thumb = ph
+        ? `<div class="thumb has-photo" style="background-image:url(&quot;${esc(ph.url)}&quot;)"><span class="cat">${esc(cat.label)}</span></div>`
+        : `<div class="thumb" style="background:${cat.color}"><span>${p.e}</span><span class="cat">${esc(cat.label)}</span></div>`;
+      return `
   <article class="card">
     ${thumb}
     <div class="body">
@@ -633,16 +1114,16 @@ function cardHTML(p) {
       ${p.custom ? `<div class="added"><span>✍️ ${esc(p.addedBy)}님이 추가했어요</span></div>` : ""}
     </div>
   </article>`;
-}
+    }
 
-function renderList() {
-  const places = allPlaces();
-  const list = places.filter(p =>
-    (state.tab === "all" || p.cat === state.tab) &&
-    (!state.onlyEmpty || !state.picks[state.me][p.id])
-  );
-  const done = places.filter(p => state.picks[state.me][p.id]).length;
-  return `
+    function renderList() {
+      const places = allPlaces();
+      const list = places.filter(p =>
+        (state.tab === "all" || p.cat === state.tab) &&
+        (!state.onlyEmpty || !state.picks[state.me][p.id])
+      );
+      const done = places.filter(p => state.picks[state.me][p.id]).length;
+      return `
     ${isLocal ? `<div class="banner">⚙️ Supabase 설정 전이라 로컬 모드예요. 체크가 이 기기에만 저장되고 상대방과 공유되지 않아요.</div>` : ""}
     ${loadError ? `<div class="banner err">⚠️ ${esc(loadError)}</div>` : ""}
     ${!isLocal && !loadError && !places.length ? `<div class="banner">후보가 하나도 없어요. ＋ 후보 추가로 넣거나, supabase-setup.sql을 실행하면 기본 후보 29곳이 들어가요.</div>` : ""}
@@ -651,50 +1132,50 @@ function renderList() {
       <label><input type="checkbox" id="onlyEmpty" ${state.onlyEmpty ? "checked" : ""}/> 안 고른 것만</label>
     </div>
     <div class="grid">${list.length ? list.map(cardHTML).join("") : `<div class="empty">${state.onlyEmpty && places.length ? "모두 골랐어요 🎉" : "이 카테고리에 후보가 없어요"}</div>`}</div>`;
-}
+    }
 
-function groupResults() {
-  const [a, b] = CONFIG.PEOPLE;
-  const g = { both: [], strong: [], split: [], okok: [], half: [], nope: [] };
-  allPlaces().forEach(p => {
-    const x = state.picks[a][p.id], y = state.picks[b][p.id];
-    if (!x && !y) return;
-    const set = [x, y].sort().join("+");
-    if (x === "must" && y === "must") g.both.push(p);
-    else if (set === "must+ok") g.strong.push(p);
-    else if (set === "must+pass") g.split.push(p);
-    else if (x === "ok" && y === "ok") g.okok.push(p);
-    else if (x === "pass" && y === "pass") g.nope.push(p);
-    else if (!x || !y) g.half.push(p);
-    else g.split.push(p);   // ok+pass
-  });
-  return g;
-}
+    function groupResults() {
+      const [a, b] = CONFIG.PEOPLE;
+      const g = {both: [], strong: [], split: [], okok: [], half: [], nope: []};
+      allPlaces().forEach(p => {
+        const x = state.picks[a][p.id], y = state.picks[b][p.id];
+        if (!x && !y) return;
+        const set = [x, y].sort().join("+");
+        if (x === "must" && y === "must") g.both.push(p);
+        else if (set === "must+ok") g.strong.push(p);
+        else if (set === "must+pass") g.split.push(p);
+        else if (x === "ok" && y === "ok") g.okok.push(p);
+        else if (x === "pass" && y === "pass") g.nope.push(p);
+        else if (!x || !y) g.half.push(p);
+        else g.split.push(p);   // ok+pass
+      });
+      return g;
+    }
 
-const GROUPS = [
-  { k: "both",   title: "💖💖 둘 다 꼭 가고 싶어요", hint: "일정에 바로 넣어도 되는 확정 후보예요." },
-  { k: "strong", title: "💖🙂 한 명은 꼭, 한 명은 괜찮아요", hint: "시간 되면 넣기 좋은 유력 후보예요." },
-  { k: "okok",   title: "🙂🙂 둘 다 괜찮아요", hint: "동선이 맞으면 들르기 좋아요." },
-  { k: "split",  title: "🤔 의견이 갈려요", hint: "이야기해 보고 정해요." },
-  { k: "half",   title: "⏳ 한 명만 골랐어요", hint: "아직 안 고른 사람이 골라 주세요." },
-  { k: "nope",   title: "🙅🙅 둘 다 패스", hint: "" },
-];
+    const GROUPS = [
+      {k: "both", title: "💖💖 둘 다 꼭 가고 싶어요", hint: "일정에 바로 넣어도 되는 확정 후보예요."},
+      {k: "strong", title: "💖🙂 한 명은 꼭, 한 명은 괜찮아요", hint: "시간 되면 넣기 좋은 유력 후보예요."},
+      {k: "okok", title: "🙂🙂 둘 다 괜찮아요", hint: "동선이 맞으면 들르기 좋아요."},
+      {k: "split", title: "🤔 의견이 갈려요", hint: "이야기해 보고 정해요."},
+      {k: "half", title: "⏳ 한 명만 골랐어요", hint: "아직 안 고른 사람이 골라 주세요."},
+      {k: "nope", title: "🙅🙅 둘 다 패스", hint: ""},
+    ];
 
-function renderResult() {
-  const [a, b] = CONFIG.PEOPLE;
-  const g = groupResults();
-  const row = p => {
-    const x = state.picks[a][p.id], y = state.picks[b][p.id];
-    const ph = photos[p.id];
-    const icon = ph ? `<span class="ph" style="background-image:url(&quot;${esc(ph.url)}&quot;)"></span>` : `<span class="e">${p.e}</span>`;
-    return `<div class="row">${icon}
+    function renderResult() {
+      const [a, b] = CONFIG.PEOPLE;
+      const g = groupResults();
+      const row = p => {
+        const x = state.picks[a][p.id], y = state.picks[b][p.id];
+        const ph = photos[p.id];
+        const icon = ph ? `<span class="ph" style="background-image:url(&quot;${esc(ph.url)}&quot;)"></span>` : `<span class="e">${p.e}</span>`;
+        return `<div class="row">${icon}
       <span class="t">${esc(p.name)}<small>${esc(CAT_MAP[p.cat].label)} · ${esc(p.area)} · ${esc(p.time)}</small></span>
       <span class="who">${esc(a)} ${x ? CHOICE_MAP[x].short : "-"}<br/>${esc(b)} ${y ? CHOICE_MAP[y].short : "-"}</span></div>`;
-  };
-  const ids = new Set(allPlaces().map(p => p.id));
-  const da = Object.keys(state.picks[a]).filter(k => ids.has(k)).length;
-  const db = Object.keys(state.picks[b]).filter(k => ids.has(k)).length;
-  return `
+      };
+      const ids = new Set(allPlaces().map(p => p.id));
+      const da = Object.keys(state.picks[a]).filter(k => ids.has(k)).length;
+      const db = Object.keys(state.picks[b]).filter(k => ids.has(k)).length;
+      return `
     <div class="toolbar"><span class="progress">${esc(a)} ${da}개 · ${esc(b)} ${db}개 골랐어요</span></div>
     ${GROUPS.map(s => `
       <section class="section">
@@ -703,186 +1184,187 @@ function renderResult() {
         <div class="rows">${g[s.k].length ? g[s.k].map(row).join("") : `<div class="empty">아직 없어요</div>`}</div>
       </section>`).join("")}
     <button class="btn" id="copyBtn">📋 결과 텍스트로 복사하기</button>`;
-}
+    }
 
-function resultText() {
-  const g = groupResults();
-  const lines = ["[상하이 여행 후보 결과]"];
-  GROUPS.forEach(s => {
-    if (!g[s.k].length || s.k === "nope") return;
-    lines.push("", s.title);
-    g[s.k].forEach(p => lines.push(`- ${p.name} (${p.area}, ${p.time})`));
-  });
-  return lines.join("\n");
-}
+    function resultText() {
+      const g = groupResults();
+      const lines = ["[상하이 여행 후보 결과]"];
+      GROUPS.forEach(s => {
+        if (!g[s.k].length || s.k === "nope") return;
+        lines.push("", s.title);
+        g[s.k].forEach(p => lines.push(`- ${p.name} (${p.area}, ${p.time})`));
+      });
+      return lines.join("\n");
+    }
 
-function render() {
-  if (!state.me) return;
-  document.getElementById("meName").textContent = state.me;
-  renderTabs();
-  document.getElementById("main").innerHTML = state.tab === "result" ? renderResult() : renderList();
-}
+    function render() {
+      if (!state.me) return;
+      document.getElementById("meName").textContent = state.me;
+      renderTabs();
+      document.getElementById("main").innerHTML = state.tab === "result" ? renderResult() : renderList();
+    }
 
-function askWho() {
-  document.getElementById("whoBtns").innerHTML =
-    CONFIG.PEOPLE.map(p => `<button class="btn" data-who="${esc(p)}">${esc(p)}</button>`).join("");
-  document.getElementById("whoModal").classList.add("show");
-}
+    function askWho() {
+      document.getElementById("whoBtns").innerHTML =
+        CONFIG.PEOPLE.map(p => `<button class="btn" data-who="${esc(p)}">${esc(p)}</button>`).join("");
+      document.getElementById("whoModal").classList.add("show");
+    }
 
-/* ---------- events ---------- */
-// 폼 상태: editingId가 있으면 수정 모드, 없으면 추가 모드
-let editingId = null;
-let removePhotoFlag = false;
+    /* ---------- events ---------- */
+    // 폼 상태: editingId가 있으면 수정 모드, 없으면 추가 모드
+    let editingId = null;
+    let removePhotoFlag = false;
 
-function showPreview(url) {
-  const pv = document.getElementById("addPreview");
-  pv.style.backgroundImage = url ? `url("${url}")` : "";
-  pv.textContent = url ? "" : "📷";
-}
-function clearObjectUrl() {
-  const pv = document.getElementById("addPreview");
-  if (pv.dataset.url) URL.revokeObjectURL(pv.dataset.url);
-  pv.dataset.url = "";
-}
+    function showPreview(url) {
+      const pv = document.getElementById("addPreview");
+      pv.style.backgroundImage = url ? `url("${url}")` : "";
+      pv.textContent = url ? "" : "📷";
+    }
+    function clearObjectUrl() {
+      const pv = document.getElementById("addPreview");
+      if (pv.dataset.url) URL.revokeObjectURL(pv.dataset.url);
+      pv.dataset.url = "";
+    }
 
-function openForm(id) {
-  const form = document.getElementById("addForm");
-  form.reset(); clearObjectUrl();
-  editingId = id || null;
-  removePhotoFlag = false;
+    function openForm(id) {
+      const form = document.getElementById("addForm");
+      form.reset(); clearObjectUrl();
+      editingId = id || null;
+      removePhotoFlag = false;
 
-  const sel = document.getElementById("addCat");
-  sel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join("");
+      const sel = document.getElementById("addCat");
+      sel.innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join("");
 
-  const row = editingId ? findRow(editingId) : null;
-  if (row) {
-    sel.value = CAT_MAP[row.cat] ? row.cat : "sight";
-    form.name.value = row.name || "";
-    form.zh.value = row.zh || "";
-    form.area.value = row.area || "";
-    form.duration.value = row.duration || "";
-    form.description.value = row.description || "";
-    form.emoji.value = row.emoji || "";
-  } else if (CAT_MAP[state.tab]) {
-    sel.value = state.tab;                                // 보고 있던 탭을 기본값으로
-  }
+      const row = editingId ? findRow(editingId) : null;
+      if (row) {
+        sel.value = CAT_MAP[row.cat] ? row.cat : "sight";
+        form.name.value = row.name || "";
+        form.zh.value = row.zh || "";
+        form.area.value = row.area || "";
+        form.duration.value = row.duration || "";
+        form.description.value = row.description || "";
+        form.emoji.value = row.emoji || "";
+      } else if (CAT_MAP[state.tab]) {
+        sel.value = state.tab;                                // 보고 있던 탭을 기본값으로
+      }
 
-  const ph = editingId ? photos[editingId] : null;
-  showPreview(ph?.url || "");
-  document.getElementById("photoRemove").hidden = !ph;
-  document.getElementById("formTitle").textContent = row ? "후보 수정 ✏️" : "새 후보 추가 ✍️";
-  document.getElementById("formDesc").textContent = row
-    ? "바꾼 내용은 두 사람 모두에게 바로 반영돼요."
-    : "추가한 후보는 두 사람 모두에게 보여요.";
-  document.getElementById("addSubmit").textContent = row ? "저장하기" : "추가하기";
-  document.getElementById("formDelete").hidden = !row;
+      const ph = editingId ? photos[editingId] : null;
+      showPreview(ph?.url || "");
+      document.getElementById("photoRemove").hidden = !ph;
+      document.getElementById("formTitle").textContent = row ? "후보 수정 ✏️" : "새 후보 추가 ✍️";
+      document.getElementById("formDesc").textContent = row
+        ? "바꾼 내용은 두 사람 모두에게 바로 반영돼요."
+        : "추가한 후보는 두 사람 모두에게 보여요.";
+      document.getElementById("addSubmit").textContent = row ? "저장하기" : "추가하기";
+      document.getElementById("formDelete").hidden = !row;
 
-  document.getElementById("addModal").classList.add("show");
-  if (!row) setTimeout(() => form.name.focus(), 50);
-}
+      document.getElementById("addModal").classList.add("show");
+      if (!row) setTimeout(() => form.name.focus(), 50);
+    }
 
-function closeForm() {
-  document.getElementById("addForm").reset();
-  clearObjectUrl(); showPreview("");
-  editingId = null; removePhotoFlag = false;
-  document.getElementById("addModal").classList.remove("show");
-}
+    function closeForm() {
+      document.getElementById("addForm").reset();
+      clearObjectUrl(); showPreview("");
+      editingId = null; removePhotoFlag = false;
+      document.getElementById("addModal").classList.remove("show");
+    }
 
-document.getElementById("addPhoto").addEventListener("change", e => {
-  clearObjectUrl();
-  const f = e.target.files[0];
-  if (f) {
-    const pv = document.getElementById("addPreview");
-    pv.dataset.url = URL.createObjectURL(f);
-    showPreview(pv.dataset.url);
-    removePhotoFlag = false;
-  } else {
-    showPreview(!removePhotoFlag && editingId ? photos[editingId]?.url : "");
-  }
-});
+    document.getElementById("addPhoto").addEventListener("change", e => {
+      clearObjectUrl();
+      const f = e.target.files[0];
+      if (f) {
+        const pv = document.getElementById("addPreview");
+        pv.dataset.url = URL.createObjectURL(f);
+        showPreview(pv.dataset.url);
+        removePhotoFlag = false;
+      } else {
+        showPreview(!removePhotoFlag && editingId ? photos[editingId]?.url : "");
+      }
+    });
 
-document.getElementById("photoRemove").addEventListener("click", () => {
-  removePhotoFlag = true;
-  document.getElementById("addPhoto").value = "";
-  clearObjectUrl(); showPreview("");
-  document.getElementById("photoRemove").hidden = true;
-});
+    document.getElementById("photoRemove").addEventListener("click", () => {
+      removePhotoFlag = true;
+      document.getElementById("addPhoto").value = "";
+      clearObjectUrl(); showPreview("");
+      document.getElementById("photoRemove").hidden = true;
+    });
 
-document.getElementById("formDelete").addEventListener("click", async () => {
-  const row = editingId && findRow(editingId);
-  if (!row) return;
-  if (!confirm(`'${row.name}' 후보를 삭제할까요?\n두 사람의 선택 기록과 사진도 함께 지워져요.`)) return;
-  const id = editingId;
-  closeForm();
-  await deletePlace(id);
-});
+    document.getElementById("formDelete").addEventListener("click", async () => {
+      const row = editingId && findRow(editingId);
+      if (!row) return;
+      if (!confirm(`'${row.name}' 후보를 삭제할까요?\n두 사람의 선택 기록과 사진도 함께 지워져요.`)) return;
+      const id = editingId;
+      closeForm();
+      await deletePlace(id);
+    });
 
-document.getElementById("addForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const v = k => (f.get(k) || "").toString().trim();
-  if (!v("name")) return;
-  const fields = {
-    cat: v("cat"), name: v("name"), zh: v("zh") || null,
-    area: v("area") || null, duration: v("duration") || null,
-    description: v("description") || null, emoji: v("emoji") || null,
-  };
-  const file = document.getElementById("addPhoto").files[0];
-  const btn = document.getElementById("addSubmit");
-  btn.disabled = true;
+    document.getElementById("addForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const v = k => (f.get(k) || "").toString().trim();
+      if (!v("name")) return;
+      const fields = {
+        cat: v("cat"), name: v("name"), zh: v("zh") || null,
+        area: v("area") || null, duration: v("duration") || null,
+        description: v("description") || null, emoji: v("emoji") || null,
+      };
+      const file = document.getElementById("addPhoto").files[0];
+      const btn = document.getElementById("addSubmit");
+      btn.disabled = true;
 
-  let id = editingId, ok;
-  const wantRemovePhoto = removePhotoFlag;
-  if (id) {
-    ok = await updatePlace(id, { ...fields, updated_at: new Date().toISOString() });
-  } else {
-    id = newId();
-    ok = await createPlace({ id, ...fields, added_by: state.me, created_at: new Date().toISOString() });
-  }
-  btn.disabled = false;
-  if (!ok) return;
+      let id = editingId, ok;
+      const wantRemovePhoto = removePhotoFlag;
+      if (id) {
+        ok = await updatePlace(id, {...fields, updated_at: new Date().toISOString()});
+      } else {
+        id = newId();
+        ok = await createPlace({id, ...fields, added_by: state.me, created_at: new Date().toISOString()});
+      }
+      btn.disabled = false;
+      if (!ok) return;
 
-  const isEdit = !!editingId;
-  closeForm();
-  state.tab = fields.cat; state.onlyEmpty = false; render();
-  toast(isEdit ? `'${fields.name}' 수정했어요` : `'${fields.name}' 추가했어요`);
-  if (file) await setPhoto(id, file);
-  else if (wantRemovePhoto) await removePhoto(id);
-});
+      const isEdit = !!editingId;
+      closeForm();
+      state.tab = fields.cat; state.onlyEmpty = false; render();
+      toast(isEdit ? `'${fields.name}' 수정했어요` : `'${fields.name}' 추가했어요`);
+      if (file) await setPhoto(id, file);
+      else if (wantRemovePhoto) await removePhoto(id);
+    });
 
-document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-tab],[data-place],[data-who],[data-edit],#meChip,#copyBtn,#addOpen,#addCancel");
-  if (!t) {
-    if (e.target.id === "addModal") closeForm();        // 바깥 클릭 시 닫기
-    return;
-  }
-  if (t.id === "addOpen") openForm();
-  else if (t.id === "addCancel") closeForm();
-  else if (t.dataset.edit) openForm(t.dataset.edit);
-  else if (t.dataset.tab) { state.tab = t.dataset.tab; render(); window.scrollTo({ top: 0 }); }
-  else if (t.dataset.place) setPick(t.dataset.place, t.dataset.v);
-  else if (t.dataset.who) {
-    state.me = t.dataset.who; safeSet(LS_ME, state.me);
-    document.getElementById("whoModal").classList.remove("show");
-    render();
-  }
-  else if (t.id === "meChip") askWho();
-  else if (t.id === "copyBtn") {
-    try { await navigator.clipboard.writeText(resultText()); toast("복사했어요! 카톡에 붙여넣어 보세요"); }
-    catch { prompt("아래 내용을 복사하세요", resultText()); }
-  }
-});
-document.addEventListener("change", e => {
-  if (e.target.id === "onlyEmpty") { state.onlyEmpty = e.target.checked; render(); }
-});
+    document.addEventListener("click", async e => {
+      const t = e.target.closest("[data-tab],[data-place],[data-who],[data-edit],#meChip,#copyBtn,#addOpen,#addCancel");
+      if (!t) {
+        if (e.target.id === "addModal") closeForm();        // 바깥 클릭 시 닫기
+        return;
+      }
+      if (t.id === "addOpen") openForm();
+      else if (t.id === "addCancel") closeForm();
+      else if (t.dataset.edit) openForm(t.dataset.edit);
+      else if (t.dataset.tab) {state.tab = t.dataset.tab; render(); window.scrollTo({top: 0});}
+      else if (t.dataset.place) setPick(t.dataset.place, t.dataset.v);
+      else if (t.dataset.who) {
+        state.me = t.dataset.who; safeSet(LS_ME, state.me);
+        document.getElementById("whoModal").classList.remove("show");
+        render();
+      }
+      else if (t.id === "meChip") askWho();
+      else if (t.id === "copyBtn") {
+        try {await navigator.clipboard.writeText(resultText()); toast("복사했어요! 카톡에 붙여넣어 보세요");}
+        catch {prompt("아래 내용을 복사하세요", resultText());}
+      }
+    });
+    document.addEventListener("change", e => {
+      if (e.target.id === "onlyEmpty") {state.onlyEmpty = e.target.checked; render();}
+    });
 
-/* ---------- start ---------- */
-(async function init() {
-  await loadAll();
-  const saved = safeGet(LS_ME);
-  if (saved && CONFIG.PEOPLE.includes(saved)) { state.me = saved; render(); }
-  else askWho();
-})();
-</script>
+    /* ---------- start ---------- */
+    (async function init() {
+      await loadAll();
+      const saved = safeGet(LS_ME);
+      if (saved && CONFIG.PEOPLE.includes(saved)) {state.me = saved; render();}
+      else askWho();
+    })();
+  </script>
 </body>
+
 </html>
